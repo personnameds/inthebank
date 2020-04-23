@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block main_content %}
+	<h1>Categories</h1>
+
+	<ul class="list-group">
+	{% for category in category_list %}
+		<li class="list-group-item">{{category}}</li>
+	{% endfor %}
+	</ul>
+	
+{% endblock %}
