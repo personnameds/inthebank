@@ -4,6 +4,8 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
 	path('', TemplateView.as_view(template_name='homepage.html'),name='homepage-index'),
+	path('budget/', include('budget.urls')),
+	path('forecast/', include('forecast.urls')),	
 	path('transaction/', include('transaction.urls')),
 	path('category/', include('category.urls')),
     path('admin/', admin.site.urls),

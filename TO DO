@@ -1,1 +1,21 @@
-Choose file to import
+Budget
+	Scheduled
+	Pending
+	Need new scheduled model
+		1. Based on Category/Transaction....
+		2. Do by date
+		3. Do by if transaction has occurred
+
+
+Add arrows to look at other months
+
+Scheduled
+	Add by transaction from form
+
+Trends
+	Use recent data to predict future 
+
+Forecast
+	Based on scheduled and month budget
+
+Click on Category to see Transactions

@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import TransactionImportView
+from .views import TransactionImportView, ChooseFileView
 
 urlpatterns = [
-    path('', TransactionImportView.as_view(), name='transaction-import'),
+    path('', ChooseFileView.as_view(), name='choose-file'),
+    path('import/<str:bank>/<str:filename>/', TransactionImportView.as_view(), name='transaction-import'),
 ]
