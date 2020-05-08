@@ -9,6 +9,7 @@
 			<td>Category</td>
 			<td>Spent</td>
 			<td>Budget</td>
+			<td>Scheduled</td>
 		</tr>
 		
 		{% for bycategory in bycategory_list %}
@@ -16,6 +17,7 @@
 			<td>{{bycategory.0}}</td>
 			<td>{{bycategory.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
 			<td>{{bycategory.2}}</td>
+			<td>{{bycategory.3.transaction__amount__sum|floatformat:"2"|default:"0.00"}}</td>
 		</tr>
 		{% endfor %}
 	</table>

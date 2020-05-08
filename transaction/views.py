@@ -1,7 +1,8 @@
 from .forms import TransactionFormSet, ChooseFileForm
-from .models import Transaction
+from .models import Transaction, ScheduledTransaction
 import csv
 import 	datetime
+from dateutil.relativedelta import relativedelta #external library/extension python-dateutil
 from decimal import Decimal
 from django.views.generic.edit import FormView
 from django.urls import reverse
@@ -31,10 +32,14 @@ class TransactionImportView(FormView):
 		bank=self.kwargs['bank']
 		
 		with open(filename) as csvfile:
+			if bank == 'PC':
+				next(csvfile)
 			readCSV = csv.reader(csvfile, delimiter=',')
 
 			data_list=[]
 	
+			#Import Data from CSV file
+			#Format is for TD or President's Choice
 			for row in readCSV:
 				if bank=='TD':
 					date=datetime.datetime.strptime(row[0], '%m/%d/%Y').date()
@@ -49,13 +54,14 @@ class TransactionImportView(FormView):
 					description=row[0].strip()
 					amount=Decimal(row[5])
 					
-					
+				#Looks for older matching transactions so can apply category
 				t=Transaction.objects.filter(description=description)
 				if t:
 					category=t[0].category
 				else:
 					category='None'
 				
+				#Looks for duplicate imports, does not import
 				duplicate=Transaction.objects.filter(
 					description=description,
 					date=date,
@@ -64,14 +70,25 @@ class TransactionImportView(FormView):
 				if not duplicate:
 					data_list.append([date,description,amount,category])
 
-
+		#Initial data from import for Form
 		initial=[{'date': d, 'description':desc, 'amount':a, 'category':c} for d, desc, a, c in data_list ]
 
 		return initial
 		
 	def form_valid(self, formset):
 		for form in formset:
-			form.save()
-		return super().form_valid(form)
-
+			t=form.save()
 		
+		st=ScheduledTransaction.objects.filter(transaction__description=t.description).first()
+		if st:
+			if st.repeat_every == 'AM':
+				st.working_date = t.date + relativedelta(months=+1)
+			elif st.repeat_every == 'AB':
+				st.working_date = t.date + relativedelta(weeks=+2)
+			elif st.repeat_every == 'SM':
+				st.working_date = st.working_date + relativedelta(months=+1)
+			elif st.repeat_every == 'B':
+				st.working_date = st.working_date + relativedelta(weeks=+2)
+			st.save()
+
+		return super().form_valid(form)

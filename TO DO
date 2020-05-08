@@ -1,12 +1,3 @@
-Budget
-	Scheduled
-	Pending
-	Need new scheduled model
-		1. Based on Category/Transaction....
-		2. Do by date
-		3. Do by if transaction has occurred
-
-
 Add arrows to look at other months
 
 Scheduled
@@ -18,4 +9,18 @@ Trends
 Forecast
 	Based on scheduled and month budget
 
+View Transactions with a sort
+
 Click on Category to see Transactions
+
+Common Name for Transaction
+
+TD Insurance, same name, different transactions
+
+Budget based on last year and Trends
+
+Check Shoppers Drug Mart
+	Multiple categories
+
+LOC/Credit Card 
+	Deposits and Debits???
