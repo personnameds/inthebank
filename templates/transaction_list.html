@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block main_content %}
+	<h1>Transactions for {{month|date:"F"}}</h1>
+
+		<table class="table">
+			<thead>
+			<tr>
+				<th scope="col">Date</th>
+				<th scope="col">Description</th>
+				<th scope="col">Amount</th>
+				<th scope="col">Category</th>
+				<th scope="col">Scheduled</th>
+			</tr>
+			</thead>
+			<tbody>			
+				{% for transaction in transaction_list %}
+				<tr>
+					<td>{{transaction.date|date:"N j"}}</td>
+					<td>{{transaction.description}}</td>
+					<td>{{transaction.amount}}</td>
+					<td>{{transaction.category}}</td>
+					<td>{{transaction.scheduledtransaction_set.all.0.working_date|date:"N j"}}
+				<tr>
+				{% endfor %}
+			</tbody>
+		</table>
+{% endblock %}
+
+

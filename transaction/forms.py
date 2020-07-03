@@ -1,5 +1,6 @@
 from django import forms 
 from .models import Transaction
+from category.models import Category
 
 BANK_CHOICES = (
 	('TD','TD CanadaTrust'),
@@ -12,7 +13,11 @@ class ChooseFileForm(forms.Form):
 	
 
 class TransactionForm(forms.ModelForm):
-
+	date = forms.DateField(label=False)
+	description = forms.CharField(max_length=250, label=False)
+	amount = forms.DecimalField(max_digits=8, decimal_places=2, label=False)
+	category = forms.ModelChoiceField(queryset=Category.objects.all(), label=False)
+		
 	class Meta:
 		model = Transaction
 		fields = ['date', 'description', 'amount', 'category']

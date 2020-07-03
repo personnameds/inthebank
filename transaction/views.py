@@ -5,7 +5,24 @@ import 	datetime
 from dateutil.relativedelta import relativedelta #external library/extension python-dateutil
 from decimal import Decimal
 from django.views.generic.edit import FormView
+from django.views.generic.list import ListView
 from django.urls import reverse
+
+class TransactionListView(ListView):
+	model=Transaction
+	template_name='transaction_list.html'
+	context_object_name='transaction_list'
+	
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		today=datetime.date.today()
+		context['month']=today
+		return context
+	
+	def get_queryset(self):
+		today=datetime.date.today()
+		queryset=Transaction.objects.filter(date__month=today.month,date__year=today.year).order_by('-date')
+		return queryset
 
 class ChooseFileView(FormView):
 	template_name = 'choosefile.html'
