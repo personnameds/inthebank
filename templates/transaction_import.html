@@ -4,6 +4,7 @@
 	<h1>Import Transactions</h1>
 	
 	<form method="post">{% csrf_token %}
+	{{ form.management_form }}
     	{% for field in form %}
     		{{field}}<br>
     	{% endfor %}

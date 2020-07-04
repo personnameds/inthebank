@@ -3,24 +3,31 @@
 {% load crispy_forms_tags %}
 
 {% block main_content %}
-	<h1>Budget by Category for {{month|date:"F"}}</h1>
-	<table>
+	<h1>
+		Budget by Category for 		
+		<a href="{% url 'budgetbycategory-list' prev.year prev.month %}">{{prev|date:"F"}}</a>			
+			{{view_date|date:"F"}}
+		{% if next %}
+			<a href="{% url 'budgetbycategory-list' next.year next.month %}">{{next|date:"F"}}</a>	
+		{% endif %}
+	</h1>
+	
+	<table class="table">
+		<thead>
 		<tr>
-			<td>Category</td>
-			<td>Spent</td>
-			<td>Budget</td>
-			<td>Scheduled</td>
+			<th scope="col">Category</th>
+			<th scope="col">Spent</th>
+			<th scope="col">Budget</th>
 		</tr>
-		
-		{% for bycategory in bycategory_list %}
-		<tr>
-			<td>{{bycategory.0}}</td>
-			<td>{{bycategory.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
-			<td>{{bycategory.2}}</td>
-			<td>{{bycategory.3.transaction__amount__sum|floatformat:"2"|default:"0.00"}}</td>
-		</tr>
+		</thead>	
+		<tbody>
+			{% for budget_item in budget_list %}
+			<tr>
+				<td>{{budget_item.0}}</td>
+				<td>{{budget_item.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
+				<td>{{budget_item.2}}</td>
+			</tr>
 		{% endfor %}
+		</tbody>
 	</table>
 {% endblock %}
-
-

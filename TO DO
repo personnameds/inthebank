@@ -1,6 +1,19 @@
+Spending by Category
+	Add budget box
+	Group by Category Group
+
+Budget
+	Display Budget by Category and Groups 
+
 Import Transaction
-	One line
-	Add if scheduled
+	Add if scheduled ???
+	Order queryset of category names
+	Add Category to List of Categories
+
+Transaction List
+	Change from buttons to icons
+
+-------Older-----
 
 Budget based on last year and Trends
 
@@ -12,8 +25,6 @@ View Transactions with a sort
 
 Click on Category to see Transactions
 
-
-Add arrows to look at other months
 
 Scheduled
 	Add by transaction from form
@@ -29,7 +40,6 @@ Common Name for Transaction
 
 TD Insurance, same name, different transactions
 
-
 Check Shoppers Drug Mart
 	Multiple categories
 
@@ -38,3 +48,4 @@ LOC/Credit Card
 	Is it showing the right info
 	
 Credit Cards
+

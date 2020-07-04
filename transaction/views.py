@@ -1,7 +1,7 @@
 from .forms import TransactionFormSet, ChooseFileForm
 from .models import Transaction, ScheduledTransaction
 import csv
-import 	datetime
+import datetime
 from dateutil.relativedelta import relativedelta #external library/extension python-dateutil
 from decimal import Decimal
 from django.views.generic.edit import FormView
@@ -12,16 +12,63 @@ class TransactionListView(ListView):
 	model=Transaction
 	template_name='transaction_list.html'
 	context_object_name='transaction_list'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		
+		today=datetime.date.today()
+
+		if self.kwargs:
+			year=self.kwargs['year']
+			month = self.kwargs['month']
+			view_date=datetime.date(year,month,1)
+			prev=view_date + relativedelta(months=-1)
+			if view_date.month != today.month or view_date.year != today.year:
+				next = view_date + relativedelta(months=+1)
+			else:
+				next = None
+		else: #Must be today
+			view_date=datetime.date.today()
+			prev=view_date + relativedelta(months=-1)
+			next = None
+
+		context['prev']=prev
+		context['next']=next
+		context['view_date']=view_date
+		return context
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
+		
 		today=datetime.date.today()
-		context['month']=today
+
+		if self.kwargs:
+			year=self.kwargs['year']
+			month = self.kwargs['month']
+			view_date=datetime.date(year,month,1)
+			prev=view_date + relativedelta(months=-1)
+			if view_date.month != today.month or view_date.year != today.year:
+				next = view_date + relativedelta(months=+1)
+			else:
+				next = None
+		else: #Must be today
+			view_date=datetime.date.today()
+			prev=view_date + relativedelta(months=-1)
+			next = None
+
+		context['prev']=prev
+		context['next']=next
+		context['view_date']=view_date
 		return context
 	
 	def get_queryset(self):
-		today=datetime.date.today()
-		queryset=Transaction.objects.filter(date__month=today.month,date__year=today.year).order_by('-date')
+		if self.kwargs:
+			year=self.kwargs['year']
+			month = self.kwargs['month']
+			view_date=datetime.date(year,month,1)
+		else:
+			view_date=datetime.date.today()
+		queryset=Transaction.objects.filter(date__month=view_date.month,date__year=view_date.year).order_by('-date')
 		return queryset
 
 class ChooseFileView(FormView):

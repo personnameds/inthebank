@@ -1,6 +1,7 @@
 from django import forms 
 from .models import Transaction
-from category.models import Category
+from category.models import Category, CategoryGroup
+from category.fields import GroupedModelChoiceField
 
 BANK_CHOICES = (
 	('TD','TD CanadaTrust'),
@@ -16,7 +17,12 @@ class TransactionForm(forms.ModelForm):
 	date = forms.DateField(label=False)
 	description = forms.CharField(max_length=250, label=False)
 	amount = forms.DecimalField(max_digits=8, decimal_places=2, label=False)
-	category = forms.ModelChoiceField(queryset=Category.objects.all(), label=False)
+	category = GroupedModelChoiceField(
+		queryset=Category.objects.exclude(group=None),
+		choices_groupby='group',
+		required=False
+	)
+	#category = forms.ModelChoiceField(queryset=Category.objects.all(), label=False)
 		
 	class Meta:
 		model = Transaction

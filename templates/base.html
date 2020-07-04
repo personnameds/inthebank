@@ -24,13 +24,16 @@
 			<a class="nav-link" href="{% url 'homepage-index' %}">Home <span class="sr-only">(current)</span></a>
 		  </li>
 		  <li class="nav-item">
-			<a class="nav-link" href="{% url 'BudgetByCategory' %}">Budget</a>
+			<a class="nav-link" href="{% url 'budgetbycategory-list' %}">Budget</a>
+		  </li>
+		  <li class="nav-item">
+			<a class="nav-link" href="{% url 'spendbycat-list' %}">Spending by Category</a>
 		  </li>
 		  <li class="nav-item">
 			<a class="nav-link" href="{% url 'transaction-list' %}">Transactions</a>
 		  </li>
 		  <li class="nav-item">
-			<a class="nav-link" href="{% url 'TransactionByCategory' %}">Forecast</a>
+			Forecast
 		  </li>
 		  <li class="nav-item">
 			<a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
