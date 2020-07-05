@@ -1,23 +1,17 @@
-Spending by Category
-	Add budget box
-	Group by Category Group
-
-Budget
-	Display Budget by Category and Groups 
+Base.html
+	Include choosing the date so not duplicated everywhere
+	Change from words to icons
 
 Import Transaction
-	Add if scheduled ???
-	Order queryset of category names
-	Add Category to List of Categories
+	Order queryset of category names (maybe fixed, untested)
+	Able to  add Category to List of Categories like in Admin
 
-Transaction List
-	Change from buttons to icons
+Scheduled
+	Rethink and add
 
 -------Older-----
 
 Budget based on last year and Trends
-
-Bootstrap
 
 View Transactions with a sort
 	Showing Transactions with related schedules, category, budget etc
@@ -25,9 +19,6 @@ View Transactions with a sort
 
 Click on Category to see Transactions
 
-
-Scheduled
-	Add by transaction from form
 
 Trends
 	Use recent data to predict future 

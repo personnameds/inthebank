@@ -18,7 +18,7 @@ class TransactionForm(forms.ModelForm):
 	description = forms.CharField(max_length=250, label=False)
 	amount = forms.DecimalField(max_digits=8, decimal_places=2, label=False)
 	category = GroupedModelChoiceField(
-		queryset=Category.objects.exclude(group=None),
+		queryset=Category.objects.exclude(group=None).order_by('group__name','name'), ##Untested
 		choices_groupby='group',
 		required=False
 	)

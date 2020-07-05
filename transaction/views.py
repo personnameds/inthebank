@@ -1,5 +1,6 @@
 from .forms import TransactionFormSet, ChooseFileForm
 from .models import Transaction, ScheduledTransaction
+from category.models import Category
 import csv
 import datetime
 from dateutil.relativedelta import relativedelta #external library/extension python-dateutil
@@ -7,6 +8,7 @@ from decimal import Decimal
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 from django.urls import reverse
+
 
 class TransactionListView(ListView):
 	model=Transaction
@@ -101,6 +103,11 @@ class TransactionImportView(FormView):
 			readCSV = csv.reader(csvfile, delimiter=',')
 
 			data_list=[]
+			
+			try:
+				no_cat = Category.objects.get(name='None') #Needs to be setup ahead or will fail
+			except Category.DoesNotExist:
+				fail # Also need to create a group, not best solution
 	
 			#Import Data from CSV file
 			#Format is for TD or President's Choice
@@ -123,7 +130,7 @@ class TransactionImportView(FormView):
 				if t:
 					category=t[0].category
 				else:
-					category='None'
+					category=no_cat
 				
 				#Looks for duplicate imports, does not import
 				duplicate=Transaction.objects.filter(

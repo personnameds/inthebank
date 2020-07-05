@@ -15,6 +15,7 @@
 	<table class="table">
 		<thead>
 		<tr>
+			<th scope="col">Group</th>
 			<th scope="col">Category</th>
 			<th scope="col">Spent</th>
 			<th scope="col">Budget</th>
@@ -23,9 +24,10 @@
 		<tbody>
 			{% for budget_item in budget_list %}
 			<tr>
-				<td>{{budget_item.0}}</td>
+				<td>{{budget_item.0.group.name}}</td> <!-- Category Budget Object-->
+				<td>{{budget_item.0.name}}</td> <!-- Category Object -->
 				<td>{{budget_item.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
-				<td>{{budget_item.2}}</td>
+				<td>{{budget_item.2.amount}}</td> <!-- CategoryBudget Object -->
 			</tr>
 		{% endfor %}
 		</tbody>

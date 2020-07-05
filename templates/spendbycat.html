@@ -4,7 +4,7 @@
 
 {% block main_content %}
 	<h1>
-		Transactions for 		
+		Spending By Category 		
 		<a href="{% url 'spendbycat-list' prev.year prev.month %}">{{prev|date:"F"}}</a>			
 			{{view_date|date:"F"}}
 		{% if next %}
@@ -15,6 +15,7 @@
 		<table class="table">
 			<thead>
 			<tr>
+				<th scope="col">Group</th>
 				<th scope="col">Category</th>
 				<th scope="col">Amount</th>
 				<th scope="col">Budget</th>
@@ -23,12 +24,13 @@
 			<tbody>			
 				{% for spendbycat in spendbycat_list %}
 				<tr>
-				<td>{{spendbycat.0}}</td>
+				<td>{{spendbycat.0.group.name}}</td> <!-- Category Group Object-->
+				<td>{{spendbycat.0.name}}</td> <!-- Category Object-->
 				<td>{{spendbycat.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
-				{% if spendbycat.2.0.amount %}
+				{% if spendbycat.2.0 %} <!-- List Category Budget Object -->
 					<td>{{spendbycat.2.0.amount}}</td>
 				{% else %}
-					<td>Add</td>
+					<td><a href="{% url 'add-budget' spendbycat.0.pk %}">Add</a></td>
 				{% endif %}
 				<tr>
 				{% endfor %}

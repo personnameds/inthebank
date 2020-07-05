@@ -10,7 +10,7 @@ from django.db.models import Sum
 
 class CategoryListView(ListView):
 	model = Category
-	template_name = 'spendbycat.html'
+	template_name = 'category_list.html'
 
 class SpendingByCategoryView(TemplateView):
 	template_name='spendbycat.html'
@@ -40,7 +40,7 @@ class SpendingByCategoryView(TemplateView):
 
 		spendbycat_list=[]
 		
-		category_list=Category.objects.all()
+		category_list=Category.objects.all().order_by('group__name','name')
 		for category in category_list:
 			category_sum=Transaction.objects.filter(
 				category=category,
