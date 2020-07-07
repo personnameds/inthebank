@@ -1,5 +1,9 @@
+Budget
+	Show budget spending by Group
+	Highlight items not in budget but spent
+	
+
 Base.html
-	Include choosing the date so not duplicated everywhere
 	Change from words to icons
 
 Import Transaction
@@ -8,6 +12,10 @@ Import Transaction
 
 Scheduled
 	Rethink and add
+
+-------Later--------
+Base.html
+	Streamline View Control shouldn't need to duplicate so much code
 
 -------Older-----
 

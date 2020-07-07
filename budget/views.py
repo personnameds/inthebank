@@ -5,36 +5,29 @@ from budget.models import CategoryBudget, BudgetForm
 from category.models import Category
 from transaction.models import Transaction
 from django.db.models import Sum
-import datetime
-from dateutil.relativedelta import relativedelta #external library/extension python-dateutil
 from decimal import Decimal
 from django.urls import reverse
+from inthebank.views import view_date_control
 
 class BudgetByCategoryView(TemplateView):
 	template_name = 'budgetbycategory.html'
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-			
-		today=datetime.date.today()
 
+		## For Title and Choosing Viewing Date			
 		if self.kwargs:
-			year=self.kwargs['year']
-			month = self.kwargs['month']
-			view_date=datetime.date(year,month,1)
-			prev=view_date + relativedelta(months=-1)
-			if view_date.month != today.month or view_date.year != today.year:
-				next = view_date + relativedelta(months=+1)
-			else:
-				next = None
-		else: #Must be today
-			view_date=datetime.date.today()
-			prev=view_date + relativedelta(months=-1)
-			next = None		
+			return_control=view_date_control(self.kwargs['year'],self.kwargs['month'])
+		else:
+			return_control=view_date_control(None, None)
 
-		context['prev']=prev
-		context['next']=next
+		view_date = return_control['view_date']
+		context['title']='Budget by Category for '	
+		context['view_url']='budgetbycategory-list'
+		context['prev']=return_control['prev']
+		context['next']=return_control['next']
 		context['view_date']=view_date
+		## End of Title
 
 		budget_list=[]
 		category_list=Category.objects.all().order_by('category__group__name','category__name')		
@@ -48,7 +41,13 @@ class BudgetByCategoryView(TemplateView):
 			budget_item=[category,category_sum,categorybudget]
 			budget_list.append(budget_item)	
 
+		no_budget_list=Transaction.objects.filter(
+				date__month=view_date.month,
+				date__year=view_date.year,
+				).exclude(category__in=categorybudget_list.values('category'))##.aggregate(Sum('amount'))
+
 		context['budget_list']=budget_list
+		context['no_budget_list']=no_budget_list
 
 		return context
 

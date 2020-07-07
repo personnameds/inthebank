@@ -50,6 +50,16 @@
 	
 	<!-- Main Body content -->
 	<main role="main" class="container-fluid h-100">
+		<h1>
+			{% if title %}
+				{{title}}	
+				<a href="{% url view_url prev.year prev.month %}"><</a>			
+					{{view_date|date:"F"}}
+				{% if next %}
+					<a href="{% url view_url next.year next.month %}">></a>	
+				{% endif %}
+			{% endif %}
+		</h1>	
 		{% block main_content%}{% endblock %}
  	</main>
   	

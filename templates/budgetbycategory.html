@@ -2,16 +2,7 @@
 
 {% load crispy_forms_tags %}
 
-{% block main_content %}
-	<h1>
-		Budget by Category for 		
-		<a href="{% url 'budgetbycategory-list' prev.year prev.month %}">{{prev|date:"F"}}</a>			
-			{{view_date|date:"F"}}
-		{% if next %}
-			<a href="{% url 'budgetbycategory-list' next.year next.month %}">{{next|date:"F"}}</a>	
-		{% endif %}
-	</h1>
-	
+{% block main_content %}	
 	<table class="table">
 		<thead>
 		<tr>
@@ -32,4 +23,29 @@
 		{% endfor %}
 		</tbody>
 	</table>
+	<h5>Not Budgeted Transactions</h5>
+	<table class="table">
+		<thead>
+		<tr>
+			<th scope="col">Date</th>
+			<th scope="col">Description</th>
+			<th scope="col">Amount</th>
+			<th scope="col">Category</th>
+		</tr>
+		</thead>	
+		<tbody>
+			{% for no_budget_item in no_budget_list %}
+			<tr>
+				<td>{{no_budget_item.date}}</td>
+				<td>{{no_budget_item.description}}</td>
+				<td>{{no_budget_item.amount}}</td>
+				<td>{{no_budget_item.category}}</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	
+	
+
 {% endblock %}
+

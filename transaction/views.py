@@ -8,6 +8,7 @@ from decimal import Decimal
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 from django.urls import reverse
+from inthebank.views import view_date_control
 
 
 class TransactionListView(ListView):
@@ -18,49 +19,19 @@ class TransactionListView(ListView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		
-		today=datetime.date.today()
-
+		## For Title and Choosing Viewing Date			
 		if self.kwargs:
-			year=self.kwargs['year']
-			month = self.kwargs['month']
-			view_date=datetime.date(year,month,1)
-			prev=view_date + relativedelta(months=-1)
-			if view_date.month != today.month or view_date.year != today.year:
-				next = view_date + relativedelta(months=+1)
-			else:
-				next = None
-		else: #Must be today
-			view_date=datetime.date.today()
-			prev=view_date + relativedelta(months=-1)
-			next = None
+			return_control=view_date_control(self.kwargs['year'],self.kwargs['month'])
+		else:
+			return_control=view_date_control(None, None)
 
-		context['prev']=prev
-		context['next']=next
+		view_date = return_control['view_date']
+		context['title']='Transactions for '
+		context['view_url']='transaction-list'	
+		context['prev']=return_control['prev']
+		context['next']=return_control['next']
 		context['view_date']=view_date
-		return context
-	
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		
-		today=datetime.date.today()
-
-		if self.kwargs:
-			year=self.kwargs['year']
-			month = self.kwargs['month']
-			view_date=datetime.date(year,month,1)
-			prev=view_date + relativedelta(months=-1)
-			if view_date.month != today.month or view_date.year != today.year:
-				next = view_date + relativedelta(months=+1)
-			else:
-				next = None
-		else: #Must be today
-			view_date=datetime.date.today()
-			prev=view_date + relativedelta(months=-1)
-			next = None
-
-		context['prev']=prev
-		context['next']=next
-		context['view_date']=view_date
+		## End of Title
 		return context
 	
 	def get_queryset(self):
