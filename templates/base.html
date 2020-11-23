@@ -6,12 +6,12 @@
     	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     	<!-- Bootstrap CSS -->
-    	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 
     	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-       	<script async src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    	<script async src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    	<script async src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>	
+		<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
 
 		<title>intheBank</title>
   </head>
@@ -24,16 +24,10 @@
 			<a class="nav-link" href="{% url 'homepage-index' %}">Home <span class="sr-only">(current)</span></a>
 		  </li>
 		  <li class="nav-item">
-			<a class="nav-link" href="{% url 'budgetbycategory-list' %}">Budget</a>
+			<a class="nav-link" href="{% url 'budget-list' %}">Budget</a>
 		  </li>
 		  <li class="nav-item">
-			<a class="nav-link" href="{% url 'spendbycat-list' %}">Spending by Category</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" href="{% url 'transaction-list' %}">Transactions</a>
-		  </li>
-		  <li class="nav-item">
-			Forecast
+			<a class="nav-link" href="{% url 'spending-list' %}">Spending</a>
 		  </li>
 		  <li class="nav-item">
 			<a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
@@ -42,7 +36,10 @@
 			<a class="nav-link" href="{% url 'choose-file' %}">Import</a>
 		  </li>
 		  <li class="nav-item">
-			<a class="nav-link" href="{% url 'category-display' %}">Categories</a>
+			<a class="nav-link" href="{% url 'category-list' %}">Categories</a>
+		  </li>
+		  <li class="nav-item">
+			<a class="nav-link" href="{% url 'transaction-list' %}">Transactions</a>
 		  </li>
 		</ul>
 	</nav>
@@ -53,10 +50,10 @@
 		<h1>
 			{% if title %}
 				{{title}}	
-				<a href="{% url view_url prev.year prev.month %}"><</a>			
+					<a href="{% url view_url prev.year prev.month %}"><svg width="1em" height="1em" viewBox="0 1 16 16" class="bi bi-caret-left-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M3.86 8.753l5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/></svg></a>
 					{{view_date|date:"F"}}
 				{% if next %}
-					<a href="{% url view_url next.year next.month %}">></a>	
+					<a href="{% url view_url next.year next.month %}"><svg width="1em" height="1em" viewBox="0 1 16 16" class="bi bi-caret-right-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12.14 8.753l-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/></svg></a>	
 				{% endif %}
 			{% endif %}
 		</h1>	

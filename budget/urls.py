@@ -1,8 +1,9 @@
 from django.urls import path
-from .views import BudgetByCategoryView, AddBudget
+from .views import BudgetView, AddGroupBudgetFormView, AddCatBudgetFormView
 
 urlpatterns = [
-    path('', BudgetByCategoryView.as_view(), name='budgetbycategory-list'),
-    path('<int:year>/<int:month>/', BudgetByCategoryView.as_view(), name='budgetbycategory-list'),
-    path('add/<int:cat_id>', AddBudget.as_view(), name='add-budget'),
+    path('', BudgetView.as_view(), name='budget-list'),
+    path('<int:year>/<int:month>/', BudgetView.as_view(), name='budget-list'),
+    path('addgroupbudget/<pk>/', AddGroupBudgetFormView.as_view(), name='add-group-budget'),
+    path('addcatbudget/<pk>/', AddCatBudgetFormView.as_view(), name='add-cat-budget'),
 ]

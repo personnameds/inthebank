@@ -10,7 +10,7 @@ from django.views.generic.list import ListView
 from django.urls import reverse
 from inthebank.views import view_date_control
 
-
+#For Viewing all Transactions
 class TransactionListView(ListView):
 	model=Transaction
 	template_name='transaction_list.html'
@@ -19,12 +19,14 @@ class TransactionListView(ListView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		
-		## For Title and Choosing Viewing Date			
+		## For Title and Choosing Viewing Date	
+		## Logic handled in function		
 		if self.kwargs:
 			return_control=view_date_control(self.kwargs['year'],self.kwargs['month'])
 		else:
 			return_control=view_date_control(None, None)
 
+		#Similar in all views, can function send this is a dictionary???
 		view_date = return_control['view_date']
 		context['title']='Transactions for '
 		context['view_url']='transaction-list'	
@@ -44,6 +46,10 @@ class TransactionListView(ListView):
 		queryset=Transaction.objects.filter(date__month=view_date.month,date__year=view_date.year).order_by('-date')
 		return queryset
 
+
+#Import Function, enter file name
+#Make this a selection window in future
+#Only works in home directory
 class ChooseFileView(FormView):
 	template_name = 'choosefile.html'
 	form_class = ChooseFileForm
@@ -56,7 +62,7 @@ class ChooseFileView(FormView):
 	def get_success_url(self, **kwargs):
 		return reverse('transaction-import', kwargs={'bank':self.bank,'filename':self.filename})
 
-
+#Import File Formset FormView
 class TransactionImportView(FormView):
 	template_name = 'transaction_import.html'
 	success_url = '/'
@@ -120,7 +126,8 @@ class TransactionImportView(FormView):
 	def form_valid(self, formset):
 		for form in formset:
 			t=form.save()
-		
+
+		#Scheduled Transactions needs rewrite and rethink
 		st=ScheduledTransaction.objects.filter(transaction__description=t.description).first()
 		if st:
 			if st.repeat_every == 'AM':

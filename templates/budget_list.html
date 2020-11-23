@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block main_content %}	
+	<table class="table">
+		<thead>
+		<tr>
+			<th scope="col">Group</th>
+			<th scope="col">Category</th>
+			<th scope="col">Spent</th>
+			<th scope="col">Budget</th>
+		</tr>
+		</thead>	
+		<tbody>
+		{% for group in budget_list %}
+			<tr class="table-secondary">
+				<td colspan='2'>{{group.0.name}}</td>
+				<td>{{group.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
+				<td>{{group.0.budget}}</td>
+			</tr>
+			{% for cat in group.2 %}
+			<tr>
+				<td></td>
+				<td>{{cat.0.name}}</td>
+				<td>{{cat.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
+				<td>{{cat.0.budget}}</td>
+			</tr>
+			{% endfor %}
+		{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}
