@@ -21,7 +21,8 @@
 					<td>{{transaction.amount}}</td>
 					<td>{{transaction.category}}</td>
 					<td>{{transaction.scheduledtransaction_set.all.0.working_date|date:"N j"}}
-				<tr>
+					<td><a class="nav-link" href="{% url 'transaction-update' transaction.pk %}?next={{request.path|urlencode}}"">Edit</td></a>
+				<tr>	
 				{% endfor %}
 			</tbody>
 		</table>

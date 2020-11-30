@@ -6,56 +6,19 @@ from transaction.models import Transaction
 from django.db.models import Sum
 from decimal import Decimal
 from django.urls import reverse
-from inthebank.views import view_date_control
-
-class AddGroupBudgetFormView(UpdateView):
-	template_name= 'budget_form.html'
-	model=CategoryGroup
-	fields=['budget']
-	
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		
-		context['budgettitle']=self.object.name
-		return context
-
-	def get_success_url(self, **kwargs):
-		return reverse('budget-list')
-
-class AddCatBudgetFormView(UpdateView):
-	template_name= 'budget_form.html'
-	model=Category
-	fields=['budget']
-	
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		
-		context['budgettitle']=self.object.name
-		return context
-
-	def get_success_url(self, **kwargs):
-		return reverse('budget-list')
-
+from inthebank.views import view_title_context_data
 
 class BudgetView(TemplateView):
 	template_name = 'budget_list.html'
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
+		
+		view_title='Budget by Category for'	
+		view_url='budget-list'
+		
+		context, view_date=view_title_context_data(self, context, view_url, view_title)
 
-		## For Title and Choosing Viewing Date			
-		if self.kwargs:
-			return_control=view_date_control(self.kwargs['year'],self.kwargs['month'])
-		else:
-			return_control=view_date_control(None, None)
-
-		view_date = return_control['view_date']
-		context['title']='Budget by Category for'	
-		context['view_url']='budget-list'
-		context['prev']=return_control['prev']
-		context['next']=return_control['next']
-		context['view_date']=view_date
-		## End of Title
 
 		budget_list=[]
 
@@ -83,3 +46,23 @@ class BudgetView(TemplateView):
 			
 		context['budget_list']=budget_list
 		return context
+
+#For Updating/Editing Category Group Budgets
+class CategoryGroupBudgetUpdateView(UpdateView):
+	model=CategoryGroup
+	template_name = 'update_budget_form.html'	
+	fields=['budget',]
+
+	def get_success_url(self, **kwargs):
+		next=self.request.GET.get('next','/')
+		return next
+
+#For Updating/Editing Category Budgets
+class CategoryBudgetUpdateView(UpdateView):
+	model=Category
+	template_name = 'update_budget_form.html'	
+	fields=['budget',]
+
+	def get_success_url(self, **kwargs):
+		next=self.request.GET.get('next','/')
+		return next

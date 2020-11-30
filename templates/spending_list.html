@@ -17,33 +17,28 @@
 				<tr class="table-primary">
 					<td colspan='2'>{{group.0.name}}</td>
 					<td>{{group.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
-					{% if group.0.budget %}	
-						<td>{{group.0.budget}}</td>
-					{% else %}
-						<td><a class="nav-link" href="{% url 'add-group-budget' group.0.pk %}">+</a></td>
-					{% endif %}
+					<td>{{group.0.budget}}</td>
 				</tr>							
 				{% for cat in group.2 %}
-					<tr class="table-secondary">
-						<td></td>
-						<td>{{cat.0.name}}</td>
-						<td>{{cat.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
-						{% if cat.0.budget %}	
-							<td>{{cat.0.budget}}</td>
-						{% else %}
-							<td><a class="nav-link" href="{% url 'add-cat-budget' cat.0.pk %}">+</a></td>
-						{% endif %}
-					</tr>
-					<tr>
-						{% for tran in cat.2 %}
-						<tr>
-							<td>{{tran.date}}</td>
-							<td>{{tran.description}}</td>
-							<td>{{tran.amount}}</td>
+					{% if cat.2 %}
+						<tr class="table-secondary">
 							<td></td>
+							<td>{{cat.0.name}}</td>
+							<td>{{cat.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
+							<td>{{cat.0.budget}}</td>
 						</tr>
-						{% endfor %}
-					</tr>
+						<tr>
+							{% for tran in cat.2 %}
+							<tr>
+								<td>{{tran.date}}</td>
+								<td>{{tran.description}}</td>
+								<td>{{tran.amount}}</td>
+								<td><a class="nav-link" href="{% url 'transaction-update' tran.pk %}?next={{request.path|urlencode}}"">Edit</td></a>
+								<td></td>
+							</tr>
+							{% endfor %}
+						</tr>
+					{% endif %}
 				{% endfor %}
 			{% endfor %}
 		</tbody>

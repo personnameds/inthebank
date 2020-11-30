@@ -18,3 +18,20 @@ def view_date_control(year, month):
 		next = None		
 
 	return {'prev':prev, 'next':next, 'view_date':view_date}
+
+def view_title_context_data(self, context, view_url, view_title):
+	## For Title and Choosing Viewing Date			
+	if self.kwargs:
+		return_control=view_date_control(self.kwargs['year'],self.kwargs['month'])
+	else:
+		return_control=view_date_control(None, None)
+
+	view_date = return_control['view_date']
+	context['title']=view_title
+	context['view_url']=view_url
+	context['prev']=return_control['prev']
+	context['next']=return_control['next']
+	context['view_date']=view_date
+	## End of Title
+	
+	return context, view_date

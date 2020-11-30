@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block main_content %}
+		<table class="table">
+			<thead>
+			<tr>
+				<th scope="col">Scheduled Dates</th>
+				<th scope="col">Description</th>
+				<th scope="col">Amount</th>
+				<th scope="col">Category</th>
+				<th scope="col">Repeat Every</th>
+			</tr>
+			</thead>
+			<tbody>			
+				{% for s_t in scheduled_list %}
+				<tr>
+					<td>{{s_t.scheduled_date|date:"N j"}}</td>
+					<td>{{s_t.description}}</td>
+					<td>{{s_t.amount}}</td>
+					<td>{{s_t.category}}</td>
+					<td>{{s_t.repeat_every}}
+					<td>+</td>
+				<tr>	
+				{% endfor %}
+			</tbody>
+		</table>
+{% endblock %}
+
+
+<!-- 
+class ScheduledTransaction(models.Model):
+	scheduled_date = models.DateField()
+	description = models.CharField(max_length=100)
+	amount = models.DecimalField(max_digits=8, decimal_places=2)
+	category = models.ForeignKey(Category, on_delete=models.SET_DEFAULT, default=None, blank=True, null=True)	
+	repeat_every = models.CharField(max_length=2, choices=REPEAT_EVERY_CHOICES)
+	
+	def __str__(self):
+		return '%s is scheduled %s and for %s' %(self.scheduled_data, self.description, self.amount, self.category, self.repeat_every)
+ -->

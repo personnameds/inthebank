@@ -1,14 +1,14 @@
-from .forms import TransactionFormSet, ChooseFileForm
-from .models import Transaction, ScheduledTransaction
+from .forms import TransactionFormSet, ChooseFileForm, TransactionForm
+from .models import Transaction, ScheduledTransaction, SavedTransaction
 from category.models import Category
 import csv
 import datetime
 from dateutil.relativedelta import relativedelta #external library/extension python-dateutil
 from decimal import Decimal
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, UpdateView
 from django.views.generic.list import ListView
 from django.urls import reverse
-from inthebank.views import view_date_control
+from inthebank.views import view_title_context_data
 
 #For Viewing all Transactions
 class TransactionListView(ListView):
@@ -19,21 +19,11 @@ class TransactionListView(ListView):
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 		
-		## For Title and Choosing Viewing Date	
-		## Logic handled in function		
-		if self.kwargs:
-			return_control=view_date_control(self.kwargs['year'],self.kwargs['month'])
-		else:
-			return_control=view_date_control(None, None)
-
-		#Similar in all views, can function send this is a dictionary???
-		view_date = return_control['view_date']
-		context['title']='Transactions for '
-		context['view_url']='transaction-list'	
-		context['prev']=return_control['prev']
-		context['next']=return_control['next']
-		context['view_date']=view_date
-		## End of Title
+		view_title='Transactions for '
+		view_url='transaction-list'	
+		
+		context, view_date=view_title_context_data(self, context, view_url, view_title)
+		
 		return context
 	
 	def get_queryset(self):
@@ -44,6 +34,38 @@ class TransactionListView(ListView):
 		else:
 			view_date=datetime.date.today()
 		queryset=Transaction.objects.filter(date__month=view_date.month,date__year=view_date.year).order_by('-date')
+		return queryset
+
+#For Updating/Editing Transactions
+class TransactionUpdateView(UpdateView):
+	model=Transaction
+	template_name = 'transaction_form.html'	
+	form_class = TransactionForm
+
+	def get_success_url(self, **kwargs):
+		next=self.request.GET.get('next','/')
+		return next
+
+class ScheduledTransactionListView(ListView):
+	model=Transaction
+	template_name='scheduled_list.html'
+	context_object_name='scheduled_list'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		
+		context['title']='Scheduled Transactions'
+		
+		return context
+	
+	def get_queryset(self):
+		if self.kwargs:
+			year=self.kwargs['year']
+			month = self.kwargs['month']
+			view_date=datetime.date(year,month,1)
+		else:
+			view_date=datetime.date.today()
+		queryset=ScheduledTransaction.objects.filter(scheduled_date__month__gte=view_date.month,scheduled_date__year__gte=view_date.year).order_by('-scheduled_date')
 		return queryset
 
 
@@ -102,13 +124,6 @@ class TransactionImportView(FormView):
 					description=row[0].strip()
 					amount=Decimal(row[5])
 					
-				#Looks for older matching transactions so can apply category
-				t=Transaction.objects.filter(description=description)
-				if t:
-					category=t[0].category
-				else:
-					category=no_cat
-				
 				#Looks for duplicate imports, does not import
 				duplicate=Transaction.objects.filter(
 					description=description,
@@ -116,28 +131,21 @@ class TransactionImportView(FormView):
 					amount=amount,
 					)
 				if not duplicate:
+					#Looks for older matching transactions so can apply category
+					t=Transaction.objects.filter(description=description).latest('date')
+					if t:
+						#Looks for saved transactions so can apply saved category
+						#For transactions that have duplicate names or change slightly
+						st=SavedTransaction.filter(description__contains=description, date=date)
+						if st:
+							category=st.category
+						else:
+							category=t.category
+					else:
+						category=no_cat
 					data_list.append([date,description,amount,category])
 
 		#Initial data from import for Form
 		initial=[{'date': d, 'description':desc, 'amount':a, 'category':c} for d, desc, a, c in data_list ]
 
 		return initial
-		
-	def form_valid(self, formset):
-		for form in formset:
-			t=form.save()
-
-		#Scheduled Transactions needs rewrite and rethink
-		st=ScheduledTransaction.objects.filter(transaction__description=t.description).first()
-		if st:
-			if st.repeat_every == 'AM':
-				st.working_date = t.date + relativedelta(months=+1)
-			elif st.repeat_every == 'AB':
-				st.working_date = t.date + relativedelta(weeks=+2)
-			elif st.repeat_every == 'SM':
-				st.working_date = st.working_date + relativedelta(months=+1)
-			elif st.repeat_every == 'B':
-				st.working_date = st.working_date + relativedelta(weeks=+2)
-			st.save()
-
-		return super().form_valid(form)

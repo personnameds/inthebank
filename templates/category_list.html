@@ -4,11 +4,20 @@
 
 {% block main_content %}
 	<h1>Categories</h1>
-
-	<ul class="list-group">
-	{% for category in category_list %}
-		<li class="list-group-item">{{category}}</li>
-	{% endfor %}
-	</ul>
 	
+	<table clase="table">
+	<tbody>
+	{% for category_group in category_group_list %}
+		<tr class="table-primary">
+			<td>{{category_group}}</td>
+			<td><a class="nav-link" href="{% url 'category-create' category_group.pk %}">+</a></td>
+		</tr>
+		{% for category in category_group.category_set.all %}
+			<tr class="table-secondar">
+				<td>{{category}}</td>
+			</tr>
+		{% endfor %}		
+	{% endfor %}
+	</tbody>
+	</table>	
 {% endblock %}

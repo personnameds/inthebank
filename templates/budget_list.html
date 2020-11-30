@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 
 {% block main_content %}	
-	<table class="table">
+	<table class="table table-sm">
 		<thead>
 		<tr>
 			<th scope="col">Group</th>
@@ -14,20 +14,33 @@
 		</thead>	
 		<tbody>
 		{% for group in budget_list %}
-			<tr class="table-secondary">
+			<tr class="table-primary">
 				<td colspan='2'>{{group.0.name}}</td>
 				<td>{{group.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
-				<td>{{group.0.budget}}</td>
+				<td><a href="{% url 'categorygroupbudget-update' group.0.pk %}?next={{request.path|urlencode}}"">
+				{% if group.0.budget %}					
+					{{group.0.budget}}
+				{% else %}
+					+			
+				{% endif %}
+				</a></td>
 			</tr>
 			{% for cat in group.2 %}
 			<tr>
 				<td></td>
 				<td>{{cat.0.name}}</td>
 				<td>{{cat.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
-				<td>{{cat.0.budget}}</td>
+				<td><a href="{% url 'categorybudget-update' cat.0.pk %}?next={{request.path|urlencode}}"">
+				{% if cat.0.budget %}					
+					{{cat.0.budget}}
+				{% else %}
+					+			
+				{% endif %}
+				</a></td>
 			</tr>
 			{% endfor %}
 		{% endfor %}
 		</tbody>
 	</table>
 {% endblock %}
+
