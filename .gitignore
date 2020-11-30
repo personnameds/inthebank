@@ -1,5 +1,4 @@
 /venv
-*.sqlite3
 *.pyc
 *.csv
 *.DS_Store
