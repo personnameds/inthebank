@@ -132,15 +132,15 @@ class TransactionImportView(FormView):
 					)
 				if not duplicate:
 					#Looks for older matching transactions so can apply category
-					t=Transaction.objects.filter(description=description).latest('date')
+					t=Transaction.objects.filter(description=description)
 					if t:
 						#Looks for saved transactions so can apply saved category
 						#For transactions that have duplicate names or change slightly
-						st=SavedTransaction.filter(description__contains=description, date=date)
+						st=SavedTransaction.objects.filter(description__contains=description, amount=amount)
 						if st:
 							category=st.category
 						else:
-							category=t.category
+							category=t[0].category
 					else:
 						category=no_cat
 					data_list.append([date,description,amount,category])
@@ -149,3 +149,9 @@ class TransactionImportView(FormView):
 		initial=[{'date': d, 'description':desc, 'amount':a, 'category':c} for d, desc, a, c in data_list ]
 
 		return initial
+
+	def form_valid(self, formset):
+		for form in formset:
+			t=form.save()
+		
+		return super().form_valid(form)
