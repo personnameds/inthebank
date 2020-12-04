@@ -1,7 +1,17 @@
-Scheduled Items/Forecast
+Scheduled Items
+	When importing scheduled items, update next date
+	
+Budget	
+	Budget is editable and shown
+	Show below Forecast based on last year and last few months 
+	Months forecase based on editable
 
-Need to stream line html form files
+Forecase Tab
+	Similar to Forecast Spreadsheet
+	
+Need to streamline html form files
 
+Able to Change order of budget items
 
 -------Much Later-----
 Spending

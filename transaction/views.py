@@ -3,12 +3,16 @@ from .models import Transaction, ScheduledTransaction, SavedTransaction
 from category.models import Category
 import csv
 import datetime
-from dateutil.relativedelta import relativedelta #external library/extension python-dateutil
+from dateutil.relativedelta import relativedelta, MO, TU, WE #external library/extension python-dateutil
 from decimal import Decimal
 from django.views.generic.edit import FormView, UpdateView
 from django.views.generic.list import ListView
 from django.urls import reverse
 from inthebank.views import view_title_context_data
+
+HOLIDAY = [(1,1),]
+
+
 
 #For Viewing all Transactions
 class TransactionListView(ListView):
@@ -47,26 +51,15 @@ class TransactionUpdateView(UpdateView):
 		return next
 
 class ScheduledTransactionListView(ListView):
-	model=Transaction
+	model=ScheduledTransaction
 	template_name='scheduled_list.html'
 	context_object_name='scheduled_list'
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		
-		context['title']='Scheduled Transactions'
-		
+		context['title']='Scheduled Transactions'		
 		return context
-	
-	def get_queryset(self):
-		if self.kwargs:
-			year=self.kwargs['year']
-			month = self.kwargs['month']
-			view_date=datetime.date(year,month,1)
-		else:
-			view_date=datetime.date.today()
-		queryset=ScheduledTransaction.objects.filter(scheduled_date__month__gte=view_date.month,scheduled_date__year__gte=view_date.year).order_by('-scheduled_date')
-		return queryset
+
 
 
 #Import Function, enter file name
@@ -135,14 +128,21 @@ class TransactionImportView(FormView):
 					t=Transaction.objects.filter(description=description)
 					if t:
 						#Looks for saved transactions so can apply saved category
-						#For transactions that have duplicate names or change slightly
-						st=SavedTransaction.objects.filter(description__contains=description, amount=amount)
+						#This catches transactions with the same name but different amount, Condo Fees
+						st=SavedTransaction.objects.filter(description=description, amount=amount)
 						if st:
-							category=st.category
+							category=st[0].category
 						else:
 							category=t[0].category
 					else:
-						category=no_cat
+						#Looks for saved bank transfers
+						#For E-Transfers, strips back to the ***
+						description = description[:-3]					
+						st=SavedTransaction.objects.filter(description=description, amount=amount)
+						if st:
+							category=st[0].category
+						else:
+							category=no_cat
 					data_list.append([date,description,amount,category])
 
 		#Initial data from import for Form
@@ -152,6 +152,28 @@ class TransactionImportView(FormView):
 
 	def form_valid(self, formset):
 		for form in formset:
-			t=form.save()
-		
+			t=form.save(commit=False)
+			scdt=ScheduledTransaction.objects.filter(description=t.description, amount=t.amount, category=t.category)
+			if not scdt:
+				#Looks for saved bank transfers
+				#For E-Transfers, strips back to the ***
+				description=t.description[:-3]
+				scdt=ScheduledTransaction.objects.filter(description=description, amount=t.amount)
+			if scdt:
+				if scdt[0].repeat_every=='SM':
+					next_date=scdt[0].scheduled_date+relativedelta(months=+1)
+					#Is it a weekend then find the next monday
+					if next_date.weekday() > 4:
+						next_date=next_date+relativedelta(months=+1, weekday=MO)
+
+					#Check for holiday
+					while (next_date.month,next_date.day) in HOLIDAY:
+						next_date=next_date+relativedelta(days=+1)
+						#Check if new date is a weekend
+						if next_date.weekday() > 4:
+							next_date=next_date+relativedelta(days=+1, weekday=MO)
+							
+					
+					scdt[0].scheduled_date=next_date
+				#scdt[0].save()
 		return super().form_valid(form)
