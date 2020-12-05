@@ -10,7 +10,6 @@
 				<th scope="col">Description</th>
 				<th scope="col">Amount</th>
 				<th scope="col">Category</th>
-				<th scope="col">Scheduled</th>
 			</tr>
 			</thead>
 			<tbody>			
@@ -20,7 +19,6 @@
 					<td>{{transaction.description}}</td>
 					<td>{{transaction.amount}}</td>
 					<td>{{transaction.category}}</td>
-					<td>{{transaction.scheduledtransaction_set.all.0.working_date|date:"N j"}}
 					<td><a class="nav-link" href="{% url 'transaction-update' transaction.pk %}?next={{request.path|urlencode}}"">Edit</td></a>
 				<tr>	
 				{% endfor %}

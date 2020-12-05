@@ -2,6 +2,7 @@ from django import forms
 from .models import Transaction
 from category.models import Category, CategoryGroup
 from category.fields import GroupedModelChoiceField
+from django.conf import settings
 
 BANK_CHOICES = (
 	('TD','TD CanadaTrust'),
@@ -11,7 +12,7 @@ BANK_CHOICES = (
 class ChooseFileForm(forms.Form):
 	filename=forms.CharField(max_length=50)
 	bank=forms.ChoiceField(choices=BANK_CHOICES)
-	
+	filepath = forms.FilePathField(path=settings.BASE_DIR+'/csvfiles', match=".*\.csv$")
 
 class TransactionForm(forms.ModelForm):
 	date = forms.DateField(label=False)

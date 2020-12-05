@@ -2,10 +2,8 @@ from django.db import models
 from category.models import Category
 
 REPEAT_EVERY_CHOICES = [
-	('AM', 'Repeat Monthly on Approx. Specific Date'),
-	('AB', 'Repeat Bi-Weekly on Approx. Specific Date'),
-	('SM', 'Repeat Monthly on Specific Date'),
-    ('B', 'Repeat Bi-Weekly based on Initial Date'),
+	('M', 'Monthly'),
+    ('B', 'Bi-Weekly'),
 ]	    
 
 class Transaction(models.Model):

@@ -96,10 +96,7 @@ class TransactionImportView(FormView):
 
 			data_list=[]
 			
-			try:
-				no_cat = Category.objects.get(name='None') #Needs to be setup ahead or will fail
-			except Category.DoesNotExist:
-				fail # Also need to create a group, not best solution
+			no_cat = Category.objects.get(name='None') #Needs to be setup ahead or will fail
 	
 			#Import Data from CSV file
 			#Format is for TD or President's Choice
@@ -123,9 +120,12 @@ class TransactionImportView(FormView):
 					date=date,
 					amount=amount,
 					)
+
 				if not duplicate:
 					#Looks for older matching transactions so can apply category
 					t=Transaction.objects.filter(description=description)
+					category = no_cat
+					
 					if t:
 						#Looks for saved transactions so can apply saved category
 						#This catches transactions with the same name but different amount, Condo Fees
@@ -137,12 +137,11 @@ class TransactionImportView(FormView):
 					else:
 						#Looks for saved bank transfers
 						#For E-Transfers, strips back to the ***
-						description = description[:-3]					
-						st=SavedTransaction.objects.filter(description=description, amount=amount)
+						temp_description = description[:-3]					
+						st=SavedTransaction.objects.filter(description=temp_description, amount=amount)
 						if st:
 							category=st[0].category
-						else:
-							category=no_cat
+
 					data_list.append([date,description,amount,category])
 
 		#Initial data from import for Form
@@ -152,7 +151,7 @@ class TransactionImportView(FormView):
 
 	def form_valid(self, formset):
 		for form in formset:
-			t=form.save(commit=False)
+			t=form.save()
 			scdt=ScheduledTransaction.objects.filter(description=t.description, amount=t.amount, category=t.category)
 			if not scdt:
 				#Looks for saved bank transfers
@@ -160,20 +159,22 @@ class TransactionImportView(FormView):
 				description=t.description[:-3]
 				scdt=ScheduledTransaction.objects.filter(description=description, amount=t.amount)
 			if scdt:
-				if scdt[0].repeat_every=='SM':
+				if scdt[0].repeat_every=='M':
 					next_date=scdt[0].scheduled_date+relativedelta(months=+1)
 					#Is it a weekend then find the next monday
 					if next_date.weekday() > 4:
 						next_date=next_date+relativedelta(months=+1, weekday=MO)
-
+						
 					#Check for holiday
 					while (next_date.month,next_date.day) in HOLIDAY:
 						next_date=next_date+relativedelta(days=+1)
 						#Check if new date is a weekend
 						if next_date.weekday() > 4:
 							next_date=next_date+relativedelta(days=+1, weekday=MO)
-							
+				
+				elif scdt[0].repeat_every=='B':
+					next_date=scdt[0].scheduled_date+relativedelta(weeks=+2)			
 					
-					scdt[0].scheduled_date=next_date
-				#scdt[0].save()
+				scdt[0].scheduled_date=next_date
+				scdt[0].save()
 		return super().form_valid(form)
