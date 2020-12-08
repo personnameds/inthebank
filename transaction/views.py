@@ -3,7 +3,7 @@ from .models import Transaction, ScheduledTransaction, SavedTransaction
 from category.models import Category
 import csv
 import datetime
-from dateutil.relativedelta import relativedelta, MO, TU, WE #external library/extension python-dateutil
+from dateutil.relativedelta import relativedelta, MO#external library/extension python-dateutil
 from decimal import Decimal
 from django.views.generic.edit import FormView, UpdateView
 from django.views.generic.list import ListView

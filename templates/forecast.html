@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block main_content %}
+	<h1>Forecast</h1>
+	
+	<table class="table">
+	<thead>
+		<tr class="table-primary">
+			<th></th>
+			{% for m in month_list %}
+				<th scope="col">{{m|date:"F"}}</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+		{% for income_forecast_item in income_forecast_list %}
+		<tr>
+			{% for f in income_forecast_item %}
+				<td>{{f}}</td>
+			{% endfor %}
+		</tr>
+		{% endfor %}
+		<tr class="table-secondary">
+			<td>Total Income</td>
+			{% for m in income_month_sum_list %}
+				<td>{{m}}</td>
+			{% endfor %}
+		{% for sched_debit_forecast_item in sched_debit_forecast_list %}
+		<tr>
+			{% for f in sched_debit_forecast_item %}
+				<td>
+					{% if f < 0 %}
+						<div class="text-danger">
+					{% else %}
+						<div>
+					{% endif %}
+					{{f}}</div>
+				</td>
+			{% endfor %}
+		</tr>
+		{% endfor %}
+		<tr class="table-secondary">
+			<td>Total Scheduled Debit</td>
+			{% for m in sched_debit_month_sum_list %}
+				<td>{{m}}</td>
+			{% endfor %}
+		</tr>
+	</tbody>
+	</table>	
+{% endblock %}

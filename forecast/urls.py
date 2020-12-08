@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import TransactionByCategoryView
+from .views import ForecastTemplateView
 
 urlpatterns = [
-    path('', TransactionByCategoryView.as_view(), name='TransactionByCategory'),
+    path('', ForecastTemplateView.as_view(), name='forecast-view'),
 ]
