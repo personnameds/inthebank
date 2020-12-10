@@ -12,7 +12,7 @@ BANK_CHOICES = (
 class ChooseFileForm(forms.Form):
 	filename=forms.CharField(max_length=50)
 	bank=forms.ChoiceField(choices=BANK_CHOICES)
-	filepath = forms.FilePathField(path=settings.BASE_DIR+'/csvfiles', match=".*\.csv$")
+#	filepath = forms.FilePathField(path=settings.BASE_DIR+'/csvfiles', match=".*\.csv$")
 
 class TransactionForm(forms.ModelForm):
 	date = forms.DateField(label=False)

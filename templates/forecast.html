@@ -2,9 +2,63 @@
 
 {% load crispy_forms_tags %}
 
+		context['income_list'] = income_list
+		context['income_total'] = income_total		
+		context['budget_list'] =  budget_desc_list
+		context['month_forecast'] = month_forecast
+
 {% block main_content %}
 	<h1>Forecast</h1>
+	<table class="table">
+	<thead>
+		<tr class="table-primary">
+			<td></td>
+			<td>{{now|date:"F"}}</td>
+		</tr>
+	</thead>
+	<tbody>
+		<!-- Income -->
+		{% for income_item in income_list %}
+		<tr>
+			<td>{{income_item.0}}</td>
+			<td>{{income_item.1|floatformat:"2"|default:"0.00"}}</td>
+		</tr>
+		{% endfor %}
+		<tr class="table-secondary">
+			<td>Income Total</td>
+			<td>{{income_total}}</td>
+		</tr>
+		<!-- Budget -->
+		{% for budget_item in budget_list %}
+		<tr>
+			<td>{{budget_item.0}}</td>
+			<td>
+				{% if budget_item.1 < 0 %}
+					<div class="text-danger">
+				{% else %}
+					<div>
+				{% endif %}
+				{{budget_item.1|floatformat:"2"|default:"0.00"}}
+				</div>
+			</td>
+		</tr>
+		{% endfor %}
+		<tr class="table-secondary">
+			<td>Month Forecast</td>
+			<td>
+				{% if month_forecast < 0 %}
+					<div class="text-danger">
+				{% else %}
+					<div>
+				{% endif %}
+				{{month_forecast|floatformat:"2"|default:"0.00"}}
+				</div>
+			</td>
+		</tr>		
+	</tbody>
+	</table>	
 	
+<!-- 
 	<table class="table">
 	<thead>
 		<tr class="table-primary">
@@ -48,5 +102,6 @@
 			{% endfor %}
 		</tr>
 	</tbody>
-	</table>	
+	</table>
+ -->	
 {% endblock %}

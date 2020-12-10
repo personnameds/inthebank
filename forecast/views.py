@@ -4,89 +4,86 @@ from dateutil.relativedelta import relativedelta
 from dateutil.rrule import rrule, WEEKLY, MONTHLY
 from category.models import Category, CategoryGroup
 from django.db.models import Sum
-from transaction.models import ScheduledTransaction
+from transaction.models import Transaction, ScheduledTransaction
 from datetime import datetime
+from calendar import monthrange
 	
-def get_months():
-	#list of next 6 months
-	num_months = 6
-	now = datetime.now()
-	last_day = now + relativedelta(months=num_months)
-	month_list = [(now + relativedelta(months=i)) for i in range(num_months)]
-	return last_day, month_list
 	
-
 class ForecastTemplateView(TemplateView):
-	template_name = 'forecast.html'
-
+	template_name = 'forecast.html'	
+	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		
-		last_day, month_list = get_months()
-		
-		#Will contain all forecast items over the period
-		#Need to add descriptions after so it can be summed using zip
-		income_forecast_list=[]
+
+#Current Month
+		now = datetime.now()
+		last_day = datetime(now.year,now.month,monthrange(now.year, 1)[1])
+
 		income_desc_list=[]
+		income_num_list=[]
 		
-		#Income Only
-		#Get Scheduled Income Items 
-		#Only the next item is scheduled need to extrapolate the rest
-		income_item_list = ScheduledTransaction.objects.filter(category__group__name='Income')
-		for income_item in income_item_list:
-			income_desc_list.append(income_item.description)
+		categorygroup_list=CategoryGroup.objects.all().exclude(name='Income')
+
+		#Income
+		income_list = ScheduledTransaction.objects.filter(category__group__name='Income')
+		for income_item in income_list:
 			#Only need how many transactions per month
 			income_dates=[]
-			for i in list(rrule(freq=WEEKLY, dtstart=income_item.scheduled_date, interval=2, until=last_day)):
-				income_dates.append(i.month)
-			
-			income_forecast_item=[]
-			for month in month_list:
-				total = (income_dates.count(month.month)) * income_item.amount
-				income_forecast_item.append(total)
-			
-			income_forecast_list.append(income_forecast_item)
+			payments = (rrule(freq=WEEKLY, dtstart=income_item.scheduled_date, interval=2, until=last_day)).count()
 
-		income_month_sum_list=list(map(sum,zip(*income_forecast_list)))
-
-		#Add Category description back in
-		for f in income_forecast_list:
-			f.insert(0,income_desc_list.pop(0))
-					
-		#Scheduled Debit Items Only
-		sched_debit_forecast_list=[]
-		sched_desc_list=[]
+			total = payments * income_item.amount
 		
-		
-		sched_debit_list = ScheduledTransaction.objects.exclude(category__group__name='Income')
-		for sched_debit_item in sched_debit_list:
-			sched_desc_list.append(sched_debit_item.description)
+			income_desc_list.append(income_item.category.name)
+			income_num_list.append(total)
 			
-			sched_dates=[]
-			if sched_debit_item.repeat_every == 'B':
-				for i in list(rrule(freq=WEEKLY, dtstart=sched_debit_item.scheduled_date, interval=2, until=last_day)):
-					sched_dates.append(i.month)	
-			elif sched_debit_item.repeat_every == 'M':
-				for i in list(rrule(freq=MONTHLY, dtstart=sched_debit_item.scheduled_date, interval=1, until=last_day)):
-					sched_dates.append(i.month)	
-			
-			sched_forecast_item=[]
-			for month in month_list:
-				total = (sched_dates.count(month.month)) * sched_debit_item.amount
-				sched_forecast_item.append(total)
-			
-			sched_debit_forecast_list.append(sched_forecast_item)
-		
-		sched_debit_month_sum_list=list(map(sum,zip(*sched_debit_forecast_list)))
-				
-		for f in sched_debit_forecast_list:
-			f.insert(0,sched_desc_list.pop(0))
+		income_list=zip(income_desc_list,income_num_list)
+		income_total=sum(income_num_list)
 
-
-		context['month_list'] = month_list
-		context['income_forecast_list'] = income_forecast_list
-		context['income_month_sum_list'] = income_month_sum_list
-		context['sched_debit_forecast_list'] = sched_debit_forecast_list
-		context['sched_debit_month_sum_list'] = sched_debit_month_sum_list
+		budget_desc_list=[]
+		budget_left_list=[]
 		
+		for categorygroup in categorygroup_list:
+			
+			group_spending=0
+			#Has a Category Group budget
+			if categorygroup.budget != 0:
+				budget=categorygroup.budget
+			else:
+				budget=0
+
+			categories=Category.objects.filter(group=categorygroup)
+			for category in categories:
+				#No Category Group budget so adding each category budget
+				if category.budget:
+					budget += category.budget
+
+				#Spending in Category Group
+				#Get all Categories in the Group
+				#Get all Transactions in the Category				
+				transactions=Transaction.objects.filter(
+													category=category,
+													date__month=now.month,
+													date__year=now.year)
+				spending=transactions.aggregate(Sum('amount'))
+				if spending['amount__sum'] is None:
+					spending=0
+				else:
+					spending=spending['amount__sum']
+				group_spending += spending
+			
+			budget_left = budget - group_spending
+	
+			budget_desc_list.append(categorygroup.name)
+			budget_left_list.append(budget_left)
+			
+			
+		budget_list=zip(budget_desc_list,budget_left_list)
+		month_forecast=income_total + sum(budget_left_list)
+
+		context['now'] = now
+		context['income_list'] = income_list
+		context['income_total'] = income_total		
+		context['budget_list'] =  budget_list
+		context['month_forecast'] = month_forecast
 		return context
+			

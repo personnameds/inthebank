@@ -1,13 +1,14 @@
+Budget
+	Show month by month
+	Informed by Schedule Transaction
+
 Forecast 
 	Based on Budget
-	
-Schedule
-	Informs Budget
+	Include more months
 
 Budget	
-	Budget is editable and shown
-	Show below Forecast based on last year and last few months 
-	Months forecase based on editable
+	Past months inform budget
+	Budget is editable
 
 Import Transaction
 	Choose File selection window
