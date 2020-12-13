@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
 from dateutil.relativedelta import relativedelta
-from dateutil.rrule import rrule, WEEKLY, MONTHLY
+from dateutil.rrule import rrule, WEEKLY
 from category.models import Category, CategoryGroup
 from django.db.models import Sum
 from transaction.models import Transaction, ScheduledTransaction

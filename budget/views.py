@@ -2,11 +2,15 @@ from django.shortcuts import render
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import UpdateView
 from category.models import Category, CategoryGroup
-from transaction.models import Transaction
+from transaction.models import Transaction, ScheduledTransaction
 from django.db.models import Sum
 from decimal import Decimal
 from django.urls import reverse
 from inthebank.views import view_title_context_data
+from dateutil.relativedelta import relativedelta
+from dateutil.rrule import rrule, WEEKLY
+from datetime import datetime
+from calendar import monthrange
 
 class BudgetView(TemplateView):
 	template_name = 'budget_list.html'
@@ -19,30 +23,44 @@ class BudgetView(TemplateView):
 		
 		context, view_date=view_title_context_data(self, context, view_url, view_title)
 
+		now = datetime.now()
+		last_day = datetime(now.year,now.month,monthrange(now.year, now.month)[1]).day
 
 		budget_list=[]
-
-		#All groups
-		cat_group_list=CategoryGroup.objects.all().order_by('name')		
-		#For each group
-		for cat_group in cat_group_list:
 		
-			#List of categories in the group
-			cat_list=[]
-			cat_list_in_group = Category.objects.filter(group=cat_group)
+		#All groups
+		categorygroup_list=CategoryGroup.objects.all().order_by('name').exclude(name='Income')
+		#For each group
+		for categorygroup in categorygroup_list:
+			categories = Category.objects.filter(group=categorygroup)
+		
 			group_sum = Transaction.objects.filter(
-				category__in=cat_list_in_group,
+				category__in=categories,
 				date__month=view_date.month,
 				date__year=view_date.year).aggregate(Sum('amount'))
-			for cat_item in cat_list_in_group:
+			
+			category_list=[]
+			for category in categories:
 				cat_sum=Transaction.objects.filter(
-					category=cat_item,
+					category=category,
 					date__month=view_date.month,
 					date__year=view_date.year).aggregate(Sum('amount'))
-				cat_list.append((cat_item,cat_sum))
+				
+				st = ScheduledTransaction.objects.filter(category=category)
+				if st:
+					#Used get because I want it to fail if more than one category is being called
+					#That will cause weird behaviours and I haven't accounted for it
+					#Only works on bi-weekly payments
+					st = ScheduledTransaction.objects.get(category=category)
+					start_day = st.scheduled_date.day
+					start_day=list(range(start_day, 1, -14))[-1]
+					payments=len(list(range(start_day,last_day,14)))
+					budget=payments * st.amount
+				else:	
+					budget=category.budget
+				category_list.append((category,cat_sum,budget))
 			
-			group_list=(cat_group,group_sum,cat_list)
-			budget_list.append(group_list)
+			budget_list.append((categorygroup,group_sum,category_list))
 			
 		context['budget_list']=budget_list
 		return context

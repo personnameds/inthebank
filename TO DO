@@ -1,56 +1,36 @@
-Budget
-	Show month by month
-	Informed by Schedule Transaction
-
 Forecast 
-	Based on Budget
-	Include more months
+	1. Based on Budget
+	2. Include more months
 
-Budget	
-	Past months inform budget
-	Budget is editable
+Home
+	3. Total, Visa Bill (Due Date)
+	???
 
-Import Transaction
-	Choose File selection window
+Budget 
+	Prediction
+
+Scheduled Transaction
+	Repeat Every, more accurate like every Thursday unless holiday
+	Amount may change need to rethink
+	Repeat monthly not needed, can change model, only works for bi-weekly
 	
-Need to streamline html form files
-
-Able to Change order of budget items
-
-Spending
-	Collapse and Expand
-
 Import Transaction
+	Import Total from TD account
+	Choose File selection window
 	Able to add Category to List of Categories like in Admin
-
-
-
-Scheduled Items
-	Scheduled Items only added and edited through Admin
-
-Budget based on last year and Trends
-
-View Transactions with a sort
-	Showing Transactions with related schedules, category, budget etc
-
-Base.html
-	Change from words to icons
-	Streamline View Control shouldn't need to duplicate so much code	
-
-Click on Category to see Transactions
-
-
-Trends
-	Use recent data to predict future 
-
-Forecast
-	Based on scheduled and month budget
-
-Model/Form
+	
+Efficiency
+	Need to streamline html form files
 	Null = True False True correct?
 
-Check Shoppers Drug Mart
-	Multiple categories
+Interface
+	Able to Change order of budget items
+	Collapse and Expand
+	Scheduled Items only added and edited through Admin
+	Sort/Filter Transactions with related schedules, category, budget etc
+	Change from words to icons
+	Streamline View Control shouldn't need to duplicate so much code	
+	Click on Category to see Transactions
 
 LOC/Credit Card 
 	Deposits and Debits???
