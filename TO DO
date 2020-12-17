@@ -1,10 +1,9 @@
 Forecast 
-	1. Based on Budget
-	2. Include more months
+	1. Include Spending in first column
+	3. Include Credit Card Payments
 
 Home
-	3. Total, Visa Bill (Due Date)
-	???
+	2. Show Total, Visa Bill (Due Date)
 
 Budget 
 	Prediction
@@ -31,6 +30,7 @@ Interface
 	Change from words to icons
 	Streamline View Control shouldn't need to duplicate so much code	
 	Click on Category to see Transactions
+	Still need crispy-forms?
 
 LOC/Credit Card 
 	Deposits and Debits???
