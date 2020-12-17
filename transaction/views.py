@@ -3,14 +3,15 @@ from .models import Transaction, ScheduledTransaction, SavedTransaction
 from category.models import Category
 import csv
 import datetime
-from dateutil.relativedelta import relativedelta, MO#external library/extension python-dateutil
+from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 from django.views.generic.edit import FormView, UpdateView
 from django.views.generic.list import ListView
 from django.urls import reverse
 from inthebank.views import view_title_context_data
 
-HOLIDAY = [(1,1),]
+#Not use maybe in future
+#HOLIDAY = [(1,1),]
 
 
 
@@ -135,46 +136,34 @@ class TransactionImportView(FormView):
 						else:
 							category=t[0].category
 					else:
-						#Looks for saved bank transfers
-						#For E-Transfers, strips back to the ***
+						#Looks for saved E-Transfers transfers
+						#Rent, Music lessons ***
 						temp_description = description[:-3]					
 						st=SavedTransaction.objects.filter(description=temp_description, amount=amount)
 						if st:
 							category=st[0].category
-
+						
+						#Looks for bank transfer
+						#RESP
+						temp_description = description[6:]					
+						st=SavedTransaction.objects.filter(description=temp_description, amount=amount)
+						if st:
+							category=st[0].category
+						
 					data_list.append([date,description,amount,category])
 
 		#Initial data from import for Form
 		initial=[{'date': d, 'description':desc, 'amount':a, 'category':c} for d, desc, a, c in data_list ]
-
+		
 		return initial
-
+	
 	def form_valid(self, formset):
 		for form in formset:
 			t=form.save()
-			scdt=ScheduledTransaction.objects.filter(description=t.description, amount=t.amount, category=t.category)
-			if not scdt:
-				#Looks for saved bank transfers
-				#For E-Transfers, strips back to the ***
-				description=t.description[:-3]
-				scdt=ScheduledTransaction.objects.filter(description=description, amount=t.amount)
+			scdt=ScheduledTransaction.objects.filter(description=t.description, category=t.category)
 			if scdt:
-				if scdt[0].repeat_every=='M':
-					next_date=scdt[0].scheduled_date+relativedelta(months=+1)
-					#Is it a weekend then find the next monday
-					if next_date.weekday() > 4:
-						next_date=next_date+relativedelta(months=+1, weekday=MO)
-						
-					#Check for holiday
-					while (next_date.month,next_date.day) in HOLIDAY:
-						next_date=next_date+relativedelta(days=+1)
-						#Check if new date is a weekend
-						if next_date.weekday() > 4:
-							next_date=next_date+relativedelta(days=+1, weekday=MO)
-				
-				elif scdt[0].repeat_every=='B':
-					next_date=scdt[0].scheduled_date+relativedelta(weeks=+2)			
-					
+				next_date=scdt[0].scheduled_date+relativedelta(weeks=+2)
 				scdt[0].scheduled_date=next_date
 				scdt[0].save()
+	
 		return super().form_valid(form)

@@ -2,18 +2,15 @@
 
 {% load crispy_forms_tags %}
 
-		context['income_list'] = income_list
-		context['income_total'] = income_total		
-		context['budget_list'] =  budget_desc_list
-		context['month_forecast'] = month_forecast
-
 {% block main_content %}
 	<h1>Forecast</h1>
 	<table class="table">
 	<thead>
 		<tr class="table-primary">
 			<td></td>
-			<td>{{now|date:"F"}}</td>
+			{% for month in month_list %}
+				<td>{{month|date:"F"}}</td>
+			{% endfor %}
 		</tr>
 	</thead>
 	<tbody>
@@ -21,87 +18,45 @@
 		{% for income_item in income_list %}
 		<tr>
 			<td>{{income_item.0}}</td>
-			<td>{{income_item.1|floatformat:"2"|default:"0.00"}}</td>
+			{% for income in income_item.1 %}
+				<td>
+				{{income|floatformat:"2"|default:"0.00"}}
+				</td>
+			{% endfor %}
 		</tr>
 		{% endfor %}
+		
 		<tr class="table-secondary">
-			<td>Income Total</td>
-			<td>{{income_total}}</td>
+			<td>{{income_total.0}}</td>
+			{% for total in income_total.1 %}
+				<td>{{total|floatformat:"2"|default:"0.00"}}</td>
+			{% endfor %}
 		</tr>
 		<!-- Budget -->
 		{% for budget_item in budget_list %}
 		<tr>
 			<td>{{budget_item.0}}</td>
-			<td>
-				{% if budget_item.1 < 0 %}
-					<div class="text-danger">
-				{% else %}
-					<div>
-				{% endif %}
-				{{budget_item.1|floatformat:"2"|default:"0.00"}}
-				</div>
-			</td>
-		</tr>
-		{% endfor %}
-		<tr class="table-secondary">
-			<td>Month Forecast</td>
-			<td>
-				{% if month_forecast < 0 %}
-					<div class="text-danger">
-				{% else %}
-					<div>
-				{% endif %}
-				{{month_forecast|floatformat:"2"|default:"0.00"}}
-				</div>
-			</td>
-		</tr>		
-	</tbody>
-	</table>	
-	
-<!-- 
-	<table class="table">
-	<thead>
-		<tr class="table-primary">
-			<th></th>
-			{% for m in month_list %}
-				<th scope="col">{{m|date:"F"}}</th>
-			{% endfor %}
-		</tr>
-	</thead>
-	<tbody>
-		{% for income_forecast_item in income_forecast_list %}
-		<tr>
-			{% for f in income_forecast_item %}
-				<td>{{f}}</td>
-			{% endfor %}
-		</tr>
-		{% endfor %}
-		<tr class="table-secondary">
-			<td>Total Income</td>
-			{% for m in income_month_sum_list %}
-				<td>{{m}}</td>
-			{% endfor %}
-		{% for sched_debit_forecast_item in sched_debit_forecast_list %}
-		<tr>
-			{% for f in sched_debit_forecast_item %}
+			{% for budget in budget_item.1 %}
 				<td>
-					{% if f < 0 %}
-						<div class="text-danger">
-					{% else %}
-						<div>
-					{% endif %}
-					{{f}}</div>
+				{{budget|floatformat:"2"|default:"0.00"}}
 				</td>
 			{% endfor %}
 		</tr>
 		{% endfor %}
+		
 		<tr class="table-secondary">
-			<td>Total Scheduled Debit</td>
-			{% for m in sched_debit_month_sum_list %}
-				<td>{{m}}</td>
+			<td>{{budget_total.0}}</td>
+			{% for total in budget_total.1 %}
+				<td>{{total|floatformat:"2"|default:"0.00"}}</td>
 			{% endfor %}
-		</tr>
+		</tr>	
+		<tr class="table-primary">
+			<td>{{net_month.0}}</td>
+			{% for net in net_month.1 %}
+				<td>{{net|floatformat:"2"|default:"0.00"}}</td>
+			{% endfor %}
+		</tr>	
 	</tbody>
-	</table>
- -->	
+	</table>	
+
 {% endblock %}
