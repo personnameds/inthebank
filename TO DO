@@ -1,12 +1,22 @@
+Budget 
+	1. Toggle View that shows all categories or only budgeted categories
+	2. Budget Calc methods
+		on scheduled transactions
+		based on the last year	
+	3. When creating/edit budgets show option to 1,2 or 3
+
+Admin
+	In-Line form Edits for Category and Budget
+
+Budget
+	Should remainder go into Category?
+	Will allow me to get rid of AvgQuarterBudget Model
+
 Forecast 
-	1. Include Spending in first column
-	3. Include Credit Card Payments
+	3. Based on budget
 
 Home
-	2. Show Total, Visa Bill (Due Date)
-
-Budget 
-	Prediction
+	Show Total, Visa Bill (Due Date)
 
 Scheduled Transaction
 	Repeat Every, more accurate like every Thursday unless holiday

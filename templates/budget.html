@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+	
+	{% if show_all %}
+		<a class="nav-link" href="{% url 'budget-list' %}"">Budgeted Only</a>
+	{% else %}
+		<a class="nav-link" href="{% url 'budget-list' %}?option=showall"">Show All</a>	
+	{% endif %}
+	<table class="table table-sm">
+		<thead>
+		<tr class="table-primary">
+			<th scope="col">Group</th>
+			<th scope="col">Category</th>
+			<th scope="col">Spent</th>
+			{% for m in month_list %}
+				<th scope="col">{{m|date:"M"}}</th>
+			{% endfor %}
+		</tr>
+		</thead>	
+		<tbody>
+		{% for group in budget_list %}		
+			<tr class="table-secondary">
+				<td colspan='2'>{{group.0}}</td>
+			
+			{% if group.1 %} <!--Category Budget -->
+				<td colspan='13'></td>
+				</tr>
+				{% for cat in group.1 %}
+				<tr>
+					<td></td>
+					<td>{{cat.0}}</td>
+					<td>{{cat.1|floatformat:"2"|default:"0.00"}}</td> <!-- Holding for Spent -->
+					<td>{{cat.2|floatformat:"2"}}
+					{% for budget in cat.3 %}
+					<td>{{budget|floatformat:"2"}}</td>
+					{% endfor %}					
+				</tr>
+				{% endfor %} 
+			
+			{% else %} <!-- Category Group Budget -->
+				<td>{{group.2|floatformat:"2"|default:"0.00"}}</td> <!-- Holding for Spent -->
+				<td>{{group.3|floatformat:"2"}}</td> <!-- Holding for Spent -->
+				{% for budget in group.4 %}
+				<td>{{budget|floatformat:"2"}}</td>
+				{% endfor %}
+				</tr>
+			{% endif %}
+		{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}
+

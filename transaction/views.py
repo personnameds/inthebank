@@ -160,10 +160,12 @@ class TransactionImportView(FormView):
 	def form_valid(self, formset):
 		for form in formset:
 			t=form.save()
+			
 			scdt=ScheduledTransaction.objects.filter(description=t.description, category=t.category)
 			if scdt:
 				next_date=scdt[0].scheduled_date+relativedelta(weeks=+2)
 				scdt[0].scheduled_date=next_date
 				scdt[0].save()
-	
+
 		return super().form_valid(form)
+		
