@@ -1,11 +1,11 @@
 from django.contrib import admin
-from .models import ConstantBudget, AvgQuarterBudget
+from .models import ConstantBudget, ScheduledBudget
 
 class ConstantBudgetAdmin(admin.ModelAdmin):
-	list_display = ('category','categorygroup','amount','remainder')
+	list_display = ('category','categorygroup','amount')
 
-class AvgQuarterBudgetAdmin(admin.ModelAdmin):
-	list_display = ('category','categorygroup','remainder')
+class ScheduledBudgetAdmin(admin.ModelAdmin):
+	list_display = ('category','categorygroup','amount', 'last_date')
 
 admin.site.register(ConstantBudget, ConstantBudgetAdmin)
-admin.site.register(AvgQuarterBudget, AvgQuarterBudgetAdmin)
+admin.site.register(ScheduledBudget, ScheduledBudgetAdmin)

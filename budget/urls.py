@@ -1,7 +1,11 @@
 from django.urls import path
-from .views import BudgetView#, BudgetFormView
+from .views import BudgetView, ConstantBudgetUpdateView, ConstantBudgetCreateView
+from .views import ScheduledBudgetUpdateView, ScheduledBudgetCreateView
 
 urlpatterns = [
     path('', BudgetView.as_view(), name='budget-list'),
-	#path('update/<int:pk>/', BudgetFormView.as_view(), name='budget-form'),
+    path('update/c/<int:pk>/', ConstantBudgetUpdateView.as_view(), name='constantbudget-update'),    
+    path('create/c/<group_pk>/<cat_pk>/', ConstantBudgetCreateView.as_view(), name='constantbudget-create'),   
+    path('update/s/<int:pk>/', ScheduledBudgetUpdateView.as_view(), name='scheduledbudget-update'),    
+    path('create/s/<group_pk>/<cat_pk>/', ScheduledBudgetCreateView.as_view(), name='scheduledbudget-create'), 
 ]

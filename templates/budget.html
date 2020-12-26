@@ -2,11 +2,13 @@
 
 {% block main_content %}
 	
+<!-- 
 	{% if show_all %}
 		<a class="nav-link" href="{% url 'budget-list' %}"">Budgeted Only</a>
 	{% else %}
 		<a class="nav-link" href="{% url 'budget-list' %}?option=showall"">Show All</a>	
 	{% endif %}
+ -->
 	<table class="table table-sm">
 		<thead>
 		<tr class="table-primary">
@@ -19,34 +21,42 @@
 		</tr>
 		</thead>	
 		<tbody>
-		{% for group in budget_list %}		
+
+		{% for group in budget_list %}
 			<tr class="table-secondary">
-				<td colspan='2'>{{group.0}}</td>
+				<td colspan='2'>
+					<a class="nav-link" href="{% url 'category-group-update' group.0.0.pk %}">
+					{{group.0.0.name}}</a>
+				</td>
+				<td>{{group.0.1|floatformat:"2"}}</td><!-- Spent -->
+				<td>{{group.0.2|floatformat:"2"}}</td><!-- Left in Month -->
+				{% if group.0.3 %} <!-- Budget for rest of Months -->
+					{% for b in group.0.3 %}
+					<td>{{b|floatformat:"2"}}</td>
+					{% endfor %}
+				{% else %}
+					<td colspan='11'></td>
+				{% endif %}
+			<tr>
+			{% for cat in group.1 %}
+			<tr>
+				<td></td>
+				<td>
+					<a class="nav-link" href="{% url 'category-update' cat.0.pk %}">
+					{{cat.0.name}}</a>
+				</td>
+				<td>{{cat.1|floatformat:"2"}}</td><!-- Spent -->
+				<td>{{cat.2|floatformat:"2"}}</td><!-- Left in Month -->
+				{% if cat.3 %} <!-- Budget for rest of Months -->
+					{% for b in cat.3 %}
+					<td>{{b|floatformat:"2"}}</td>
+					{% endfor %}
+				{% endif %}
+			<tr>
+			{% endfor %} <!-- End for Categories -->
 			
-			{% if group.1 %} <!--Category Budget -->
-				<td colspan='13'></td>
-				</tr>
-				{% for cat in group.1 %}
-				<tr>
-					<td></td>
-					<td>{{cat.0}}</td>
-					<td>{{cat.1|floatformat:"2"|default:"0.00"}}</td> <!-- Holding for Spent -->
-					<td>{{cat.2|floatformat:"2"}}
-					{% for budget in cat.3 %}
-					<td>{{budget|floatformat:"2"}}</td>
-					{% endfor %}					
-				</tr>
-				{% endfor %} 
-			
-			{% else %} <!-- Category Group Budget -->
-				<td>{{group.2|floatformat:"2"|default:"0.00"}}</td> <!-- Holding for Spent -->
-				<td>{{group.3|floatformat:"2"}}</td> <!-- Holding for Spent -->
-				{% for budget in group.4 %}
-				<td>{{budget|floatformat:"2"}}</td>
-				{% endfor %}
-				</tr>
-			{% endif %}
-		{% endfor %}
+		{% endfor %} <!-- End for Group -->
+
 		</tbody>
 	</table>
 {% endblock %}

@@ -11,6 +11,7 @@ BUDGET_METHOD = [
 class CategoryGroup(models.Model):
 	name = models.CharField(max_length=50)
 	budget_method = models.CharField(max_length=1, choices=BUDGET_METHOD, default='N')
+	remainder = models.BooleanField(default=True, help_text='Check if pot of money.')
 
 	def __str__(self):
 		return '%s' %self.name
@@ -23,6 +24,7 @@ class Category(models.Model):
 	name = models.CharField(max_length=50, blank=True)
 	group = models.ForeignKey(CategoryGroup, on_delete=models.PROTECT)
 	budget_method = models.CharField(max_length=1, choices=BUDGET_METHOD, default='N')
+	remainder = models.BooleanField(default=True, help_text='Check if pot of money.')
 
 	def __str__(self):
 		return '%s' %self.name

@@ -1,9 +1,9 @@
 Budget 
-	1. Toggle View that shows all categories or only budgeted categories
-	2. Budget Calc methods
-		on scheduled transactions
+	Budget Calc methods
 		based on the last year	
-	3. When creating/edit budgets show option to 1,2 or 3
+		create specific month budgets situations
+	When changing budget types should delete the old for example Constant Budget
+		
 
 Admin
 	In-Line form Edits for Category and Budget
@@ -13,7 +13,10 @@ Budget
 	Will allow me to get rid of AvgQuarterBudget Model
 
 Forecast 
-	3. Based on budget
+	Make it
+	Toggle mode that shows different spending scenarios, (avg, last year)
+	
+Category/CategoryGroup UpdateView can be a single FormView
 
 Home
 	Show Total, Visa Bill (Due Date)
