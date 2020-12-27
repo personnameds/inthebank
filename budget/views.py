@@ -10,6 +10,19 @@ from django.db.models import Sum
 from django.urls import reverse
 from calendar import monthrange
 
+#Spent
+def get_spent(categories,category,now):
+	if categories:
+		spent = Transaction.objects.filter(
+					category__in=categories, date__month=now.month, date__year=now.year
+					).aggregate(Sum('amount'))
+	elif category:
+		spent = Transaction.objects.filter(
+				category=category, date__month=now.month, date__year=now.year
+					).aggregate(Sum('amount'))
+	spent = spent['amount__sum'] or 0
+	return spent
+
 #Left in Budget
 def get_budget_left(month_budget,remainder, spent):
 	if remainder:
@@ -56,14 +69,11 @@ def get_avgquarterbudget(categories, category, spent, remainder, now):
 
 #Scheduled Budget
 def get_scheduledbudget(categorygroup, category, spent, remainder, now, month_list):
-	
-
 	if categorygroup:
 		sb_object = ScheduledBudget.objects.get(categorygroup=categorygroup)
 	else:
 		sb_object = ScheduledBudget.objects.get(category=category)
 
-	
 	budget_amount = sb_object.amount
 	last_date = sb_object.last_date
 
@@ -89,10 +99,35 @@ def get_scheduledbudget(categorygroup, category, spent, remainder, now, month_li
 	month_budget_left = get_budget_left(month_budget, remainder, spent)
 	
 	month_budget_list= [payment_list.count(m.month) * budget_amount for m in month_list[1:]]
-	
 
 	return month_budget_list, month_budget_left
 
+#Year Budget
+def get_lastyearbudget(categories, category, spent, remainder, now, month_list):
+	
+	from_date = now.replace(day=1)
+	to_date = now.replace(day=1)							
+	from_date = from_date + relativedelta(years=-1)
+	to_date = to_date + relativedelta(years=-1, days=-1)
+
+	month_budget_list = []
+	if categories:
+		month_budget = Transaction.objects.filter(category__in=categories, date__gte=from_date, date__lte=to_date).aggregate(Sum('amount'))
+		for m in month_list[1:]:
+			year_ago = m + relativedelta(years=-1)			
+			mb = Transaction.objects.filter(category__in=categories, date__month=year_ago.month, date__year=year_ago.year).aggregate(Sum('amount'))
+			month_budget_list.append(mb['amount__sum'] or 0)
+	else:
+		month_budget = Transaction.objects.filter(category=category, date__gte=from_date, date__lte=to_date).aggregate(Sum('amount'))
+		for m in month_list[1:]:
+			year_ago = m + relativedelta(years=-1)
+			mb = Transaction.objects.filter(category=category, date__month=year_ago.month, date__year=year_ago.year).aggregate(Sum('amount'))
+			month_budget_list.append(mb['amount__sum'] or 0)
+	
+	month_budget=month_budget['amount__sum'] or 0
+	month_budget_left = get_budget_left(month_budget, remainder, spent)
+
+	return month_budget_list, month_budget_left
 
 class BudgetView(TemplateView):
 	template_name='budget.html'
@@ -111,19 +146,14 @@ class BudgetView(TemplateView):
 		month_list = list(rrule(freq=MONTHLY, count = 12, dtstart=now))
 		
 		budget_list=[]
-		
-		categorygroups = CategoryGroup.objects.all().exclude(name='Income')
-		
-		
+		categorygroups = CategoryGroup.objects.all().exclude(name='Income').exclude(name='None')
+				
 		for categorygroup in categorygroups:
 
 			categories = categorygroup.category_set.all()
 			
 			#Group Spending
-			spent = Transaction.objects.filter(
-					category__in=categories, date__month=now.month, date__year=now.year
-					).aggregate(Sum('amount'))
-			spent = spent['amount__sum'] or 0
+			spent = get_spent(categories, None, now) 
 			
 			#Group Budget
 			if categorygroup.budget_method != 'N':
@@ -133,8 +163,12 @@ class BudgetView(TemplateView):
 				#Avg over Quarter
 				elif categorygroup.budget_method == 'A':
 					month_budget_list, budget_left = get_avgquarterbudget(categories, None, spent, categorygroup.remainder, now)
+				#Scheduled
 				elif categorygroup.budget_method == 'S':
 					month_budget_list, budget_left = get_scheduledbudget(categorygroup, None, spent, categorygroup.remainder, now, month_list)
+				#Last Year
+				elif categorygroup.budget_method == 'Y':
+					month_budget_list, budget_left = get_lastyearbudget(categories, None, spent, categorygroup.remainder, now, month_list)
 			else:
 				budget_left = None
 				month_budget = None
@@ -145,10 +179,7 @@ class BudgetView(TemplateView):
 			#Category Spending
 			category_list=[]
 			for category in categories:
-				spent = Transaction.objects.filter(
-					category=category, date__month=now.month, date__year=now.year
-					).aggregate(Sum('amount'))
-				spent = spent['amount__sum'] or 0			
+				spent = get_spent(None, category, now)		
 			
 				#Category Budget
 				if category.budget_method != 'N':
@@ -158,8 +189,12 @@ class BudgetView(TemplateView):
 					#Avg over Quarter
 					elif category.budget_method == 'A':
 						month_budget_list, budget_left = get_avgquarterbudget(None, category, spent, category.remainder, now)
+					#Scheduled
 					elif category.budget_method =='S':
 						month_budget_list, budget_left = get_scheduledbudget(None, category, spent, category.remainder, now, month_list)
+					#Last Year
+					elif category.budget_method == 'Y':
+						month_budget_list, budget_left = get_lastyearbudget(None, category, spent, category.remainder, now, month_list)
 				else:
 					budget_left = None
 					month_budget = None
