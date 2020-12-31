@@ -1,12 +1,14 @@
 Forecast 
-	1. Include Spending in first column
-	3. Include Credit Card Payments
+	Make it
+	Toggle mode that shows different spending scenarios, (avg, last year)
+
+Admin
+	In-Line form Edits for Category and Budget
+
+Category/CategoryGroup UpdateView can be a single FormView
 
 Home
-	2. Show Total, Visa Bill (Due Date)
-
-Budget 
-	Prediction
+	Show Total, Visa Bill (Due Date)
 
 Scheduled Transaction
 	Repeat Every, more accurate like every Thursday unless holiday

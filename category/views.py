@@ -1,7 +1,8 @@
 from django.views.generic import ListView
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import UpdateView
 from .models import Category, CategoryGroup
+from budget.models import ConstantBudget, ScheduledBudget
 from transaction.models import Transaction
 from decimal import Decimal
 from django.db.models import Sum
@@ -14,24 +15,46 @@ class CategoryListView(ListView):
 	context_object_name = 'category_group_list'
 	template_name = 'category_list.html'
 
-class CategoryCreateView(CreateView):
-	model = Category
-	template_name = 'create_form.html'	
-	fields=['name',]
-	
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['cat_group']=CategoryGroup.objects.get(pk=self.kwargs['group_pk'])
-		return context
-	
-	def form_valid(self, form):
-		group = CategoryGroup.objects.get(pk=self.kwargs['group_pk'])
-		form.instance.group = group
-		return super(CategoryCreateView, self).form_valid(form)
-	
+class CategoryGroupUpdateView(UpdateView):
+	model  = CategoryGroup
+	template_name = 'category_form.html'
+	fields=['name', 'budget_method', 'remainder']
+
 	def get_success_url(self, **kwargs):
-		return reverse('category-list')
-	
+		if self.object.budget_method == 'C':
+			cb = ConstantBudget.objects.filter(categorygroup=self.object)
+			if cb:
+				return reverse('constantbudget-update', kwargs={'pk':cb[0].pk})
+			else:
+				return reverse('constantbudget-create', kwargs={'group_pk':self.object.pk, 'cat_pk':None})
+		elif self.object.budget_method=='S':
+			sb = ScheduledBudget.objects.filter(categorygroup=self.object)
+			if sb:
+				return reverse('scheduledbudget-update', kwargs={'pk':sb[0].pk})
+			else:
+				return reverse('scheduedbudget-create', kwargs={'group_pk':self.object.pk, 'cat_pk':None})
+		return reverse('budget-list')
+
+class CategoryUpdateView(UpdateView):
+	model  = Category
+	template_name = 'category_form.html'
+	fields=['name', 'budget_method', 'remainder']
+
+	def get_success_url(self, **kwargs):
+		if self.object.budget_method == 'C':
+			cb = ConstantBudget.objects.filter(category=self.object)
+			if cb:
+				return reverse('constantbudget-update', kwargs={'pk':cb[0].pk})
+			else:
+				return reverse('constantbudget-create', kwargs={'group_pk':None, 'cat_pk':self.object.pk})
+		if self.object.budget_method == 'S':
+			sb = ScheduledBudget.objects.filter(category=self.object)
+			if sb:
+				return reverse('scheduledbudget-update', kwargs={'pk':sb[0].pk})
+			else:
+				return reverse('scheduledbudget-create', kwargs={'group_pk':None, 'cat_pk':self.object.pk})
+		return reverse('budget-list')
+
 class SpendingView(TemplateView):
 	template_name='spending_list.html'
 	

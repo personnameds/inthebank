@@ -10,7 +10,6 @@
 	{% for category_group in category_group_list %}
 		<tr class="table-primary">
 			<td>{{category_group}}</td>
-			<td><a class="nav-link" href="{% url 'category-create' category_group.pk %}">+</a></td>
 		</tr>
 		{% for category in category_group.category_set.all %}
 			<tr class="table-secondar">
