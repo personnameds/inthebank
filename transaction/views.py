@@ -51,18 +51,6 @@ class TransactionUpdateView(UpdateView):
 		next=self.request.GET.get('next','/')
 		return next
 
-class ScheduledTransactionListView(ListView):
-	model=ScheduledTransaction
-	template_name='scheduled_list.html'
-	context_object_name='scheduled_list'
-
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['title']='Scheduled Transactions'		
-		return context
-
-
-
 #Import Function, enter file name
 #Make this a selection window in future
 #Only works in home directory

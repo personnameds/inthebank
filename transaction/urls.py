@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import TransactionImportView, ChooseFileView, TransactionListView, TransactionUpdateView, ScheduledTransactionListView
+from .views import TransactionImportView, ChooseFileView, TransactionListView, TransactionUpdateView
 
 urlpatterns = [
     path('', TransactionListView.as_view(), name='transaction-list'),
@@ -7,5 +7,4 @@ urlpatterns = [
     path('update/<int:pk>/', TransactionUpdateView.as_view(), name='transaction-update'),
 	path('import/', ChooseFileView.as_view(), name='choose-file'),
     path('import/<str:bank>/<str:filename>/', TransactionImportView.as_view(), name='transaction-import'),
-    path('scheduled/', ScheduledTransactionListView.as_view(), name='scheduled-list'),
 ]

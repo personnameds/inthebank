@@ -29,10 +29,15 @@
 					{{group.0.0.name}}</a>
 				</td>
 				<td>{{group.0.1|floatformat:"2"}}</td><!-- Spent -->
-				<td>{{group.0.2|floatformat:"2"}}</td><!-- Left in Month -->
+				<td><a class="nav-link" href="{% url 'specificbudget-form' group.0.0.pk None month_list.0.month month_list.0.year %}">
+					{{group.0.2|floatformat:"2"}}<!-- Left in Month -->
+				</a></td>
 				{% if group.0.3 %} <!-- Budget for rest of Months -->
 					{% for b in group.0.3 %}
-					<td>{{b|floatformat:"2"}}</td>
+					<td>
+						<a class="nav-link" href="{% url 'specificbudget-form' group.0.0.pk None b.0.month b.0.year %}">
+						{{b.1|floatformat:"2"}}{{b.2}}</a>
+					</td>
 					{% endfor %}
 				{% else %}
 					<td colspan='11'></td>
@@ -46,10 +51,15 @@
 					{{cat.0.name}}</a>
 				</td>
 				<td>{{cat.1|floatformat:"2"}}</td><!-- Spent -->
-				<td>{{cat.2|floatformat:"2"}}</td><!-- Left in Month -->
+				<td><a class="nav-link" href="{% url 'specificbudget-form' None cat.0.pk month_list.0.month month_list.0.year %}">
+					{{cat.2|floatformat:"2"}}<!-- Left in Month -->
+				</a></td>
 				{% if cat.3 %} <!-- Budget for rest of Months -->
 					{% for b in cat.3 %}
-					<td>{{b|floatformat:"2"}}</td>
+					<td>
+						<a class="nav-link" href="{% url 'specificbudget-form' None cat.0.pk b.0.month b.0.year %}">
+						{{b.1|floatformat:"2"}}{{b.2}}</a>
+					</td>
 					{% endfor %}
 				{% endif %}
 			<tr>

@@ -1,21 +1,10 @@
-Budget 
-	Budget Calc methods
-		based on the last year	
-		create specific month budgets situations
-	When changing budget types should delete the old for example Constant Budget
-		
+Forecast 
+	Make it
+	Toggle mode that shows different spending scenarios, (avg, last year)
 
 Admin
 	In-Line form Edits for Category and Budget
 
-Budget
-	Should remainder go into Category?
-	Will allow me to get rid of AvgQuarterBudget Model
-
-Forecast 
-	Make it
-	Toggle mode that shows different spending scenarios, (avg, last year)
-	
 Category/CategoryGroup UpdateView can be a single FormView
 
 Home
