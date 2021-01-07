@@ -1,14 +1,20 @@
-Forecast 
-	Make it
-	Toggle mode that shows different spending scenarios, (avg, last year)
+LOC/Credit Card 
+	Due Dates
+	Payment this month/next month
+	Is payment scheduled or not
+
+Budget/Forecast
+	Will most likley go to zero after just one scheduled transaction per month
+	*Not displayed on Current Month if modified
+
+Home
+	Show Total, Visa Bill (Due Date)
+	Bar Graph
 
 Admin
 	In-Line form Edits for Category and Budget
 
 Category/CategoryGroup UpdateView can be a single FormView
-
-Home
-	Show Total, Visa Bill (Due Date)
 
 Scheduled Transaction
 	Repeat Every, more accurate like every Thursday unless holiday
@@ -34,8 +40,9 @@ Interface
 	Click on Category to see Transactions
 	Still need crispy-forms?
 
-LOC/Credit Card 
-	Deposits and Debits???
-	Is it showing the right info
-	Credit Cards - do I need them in spending lists etc
 
+
+Forecast 
+	URL for balance is old school
+	Toggle mode that shows different spending scenarios, (avg, last year)
+	After update return to view that is shown (Forecast or Budget)

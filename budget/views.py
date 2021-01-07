@@ -52,7 +52,10 @@ def check_specific_budget(month_budget, month_budget_list, month_list, categoryg
 #Left in Budget
 def get_budget_left(month_budget,remainder, spent):
 	if remainder:
-		budget_left = min(0,month_budget - spent)
+		if month_budget < 0:
+			budget_left = min(0,month_budget - spent)
+		else:
+			budget_left = month_budget - spent
 	elif spent:
 		budget_left = 0
 	else:
@@ -113,8 +116,8 @@ def get_scheduledbudget(categorygroup, category, spent, today, remainder, month_
 	#Finds payments based on last date
 	#For first time, may miss a payment if last_date entered by user is not first payment that month
 	#Code needs to always save last_date as the first payment that month each time
-
-	from_date = rrule(freq=WEEKLY, interval=2, dtstart=last_date, until=today)
+	last_day_month = today.replace(day=monthrange(today.year,today.month)[1])
+	from_date = rrule(freq=WEEKLY, interval=2, dtstart=last_date, until=last_day_month)
 	from_date = [fd for fd in from_date if fd.month == today.month][0]
 	sb_object.last_date = from_date
 
@@ -141,9 +144,9 @@ def get_scheduledbudget(categorygroup, category, spent, today, remainder, month_
 def get_lastyearbudget(categories, categorygroup, category, spent, today, remainder, month_list):
 	
 	from_date = today.replace(day=1)
-	to_date = today.replace(day=1)							
 	from_date = from_date + relativedelta(years=-1)
-	to_date = to_date + relativedelta(years=-1, days=-1)
+	to_date = today + relativedelta(years=-1)
+	to_date = to_date.replace(day=monthrange(to_date.year,to_date.month)[1])
 
 	month_budget_list = []
 	if categories:
@@ -169,87 +172,85 @@ def get_lastyearbudget(categories, categorygroup, category, spent, today, remain
 
 	return month_budget_list, month_budget_left
 
-class BudgetView(TemplateView):
-	template_name='budget.html'
+#Get the Budget - Main Function
+def get_budget(today, month_list):
+	budget_list=[]
+	categorygroups = CategoryGroup.objects.all().exclude(name='Income').exclude(name='None')
 
+	for categorygroup in categorygroups:
 
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-
-# 		show_all=self.request.GET.get('option')
-# 		if show_all == 'showall':
-# 			show_all=True
-# 		else:
-# 			show_all=False
-
-		today = date.today()
-		first_of_month = today.replace(day=1)
-		month_list = list(rrule(freq=MONTHLY, count = 12, dtstart=first_of_month))
+		categories = categorygroup.category_set.all()
 		
-		budget_list=[]
-		categorygroups = CategoryGroup.objects.all().exclude(name='Income').exclude(name='None')
-				
-		for categorygroup in categorygroups:
+		#Group Spending
+		spent = get_spent(categories, None, today) 
+		
+		#Group Budget
+		if categorygroup.budget_method != 'N':
+			#Constant
+			if categorygroup.budget_method == 'C':
+				month_budget_list, budget_left = get_constantbudget(categorygroup,None, spent, categorygroup.remainder, month_list)
+			#Avg over Quarter
+			elif categorygroup.budget_method == 'A':
+				month_budget_list, budget_left = get_avgquarterbudget(categories, categorygroup, None, spent, today, categorygroup.remainder, month_list)
+			#Scheduled
+			elif categorygroup.budget_method == 'S':
+				month_budget_list, budget_left = get_scheduledbudget(categorygroup, None, spent, today, categorygroup.remainder, month_list)
+			#Last Year
+			elif categorygroup.budget_method == 'Y':
+				month_budget_list, budget_left = get_lastyearbudget(categories, categorygroup, None, spent, today, categorygroup.remainder, month_list)
+		else:
+			budget_left = None
+			month_budget = None
+			month_budget_list = None
+			
+		group_list=(categorygroup, spent, budget_left, month_budget_list)
 
-			categories = categorygroup.category_set.all()
-			
-			#Group Spending
-			spent = get_spent(categories, None, today) 
-			
-			#Group Budget
-			if categorygroup.budget_method != 'N':
+		#Category Spending
+		category_list=[]
+		for category in categories:
+			spent = get_spent(None, category, today)		
+		
+			#Category Budget
+			if category.budget_method != 'N':
 				#Constant
-				if categorygroup.budget_method == 'C':
-					month_budget_list, budget_left = get_constantbudget(categorygroup,None, spent, categorygroup.remainder, month_list)
+				if category.budget_method == 'C':
+					month_budget_list, budget_left = get_constantbudget(None, category, spent, category.remainder, month_list)
 				#Avg over Quarter
-				elif categorygroup.budget_method == 'A':
-					month_budget_list, budget_left = get_avgquarterbudget(categories, categorygroup, None, spent, today, categorygroup.remainder, month_list)
+				elif category.budget_method == 'A':
+					month_budget_list, budget_left = get_avgquarterbudget(None, None, category, spent, today, category.remainder, month_list)
 				#Scheduled
-				elif categorygroup.budget_method == 'S':
-					month_budget_list, budget_left = get_scheduledbudget(categorygroup, None, spent, today, categorygroup.remainder, month_list)
+				elif category.budget_method =='S':
+					month_budget_list, budget_left = get_scheduledbudget(None, category, spent, today, category.remainder, month_list)
 				#Last Year
-				elif categorygroup.budget_method == 'Y':
-					month_budget_list, budget_left = get_lastyearbudget(categories, categorygroup, None, spent, today, categorygroup.remainder, month_list)
+				elif category.budget_method == 'Y':
+					month_budget_list, budget_left = get_lastyearbudget(None, None, category, spent, today, category.remainder, month_list)
 			else:
 				budget_left = None
 				month_budget = None
 				month_budget_list = None
-				
-			group_list=(categorygroup, spent, budget_left, month_budget_list)
-
-			#Category Spending
-			category_list=[]
-			for category in categories:
-				spent = get_spent(None, category, today)		
 			
-				#Category Budget
-				if category.budget_method != 'N':
-					#Constant
-					if category.budget_method == 'C':
-						month_budget_list, budget_left = get_constantbudget(None, category, spent, category.remainder, month_list)
-					#Avg over Quarter
-					elif category.budget_method == 'A':
-						month_budget_list, budget_left = get_avgquarterbudget(None, None, category, spent, today, category.remainder, month_list)
-					#Scheduled
-					elif category.budget_method =='S':
-						month_budget_list, budget_left = get_scheduledbudget(None, category, spent, today, category.remainder, month_list)
-					#Last Year
-					elif category.budget_method == 'Y':
-						month_budget_list, budget_left = get_lastyearbudget(None, None, category, spent, today, category.remainder, month_list)
-				else:
-					budget_left = None
-					month_budget = None
-					month_budget_list = None
-				
-				category_list.append((category, spent, budget_left, month_budget_list))
-				
-			budget_list.append((group_list,category_list))
+			category_list.append((category, spent, budget_left, month_budget_list))
+			
+		budget_list.append((group_list,category_list))
+	
+	return budget_list
+
+class BudgetView(TemplateView):
+	template_name='budget.html'
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
 		
+		today = date.today()
+		first_of_month = today.replace(day=1)
+		month_list = list(rrule(freq=MONTHLY, count = 12, dtstart=first_of_month))
+
+		budget_list = get_budget(today, month_list)
+
 		context['month_list'] = month_list
 		context['budget_list'] = budget_list
 		context['title'] = 'Budget for Year'
-#		context['show_all'] = show_all
-		
+
 		return context
 
 class ConstantBudgetUpdateView(UpdateView):

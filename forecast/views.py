@@ -1,129 +1,95 @@
-from django.shortcuts import render
 from django.views.generic.base import TemplateView
-from category.models import Category, CategoryGroup
-from django.db.models import Sum
-from transaction.models import Transaction, ScheduledTransaction
-from datetime import datetime
-from calendar import monthrange
+from budget.views import get_budget, get_spent, get_scheduledbudget, check_specific_budget
+from budget.models import ScheduledBudget
+from category.models import Category
+from account.models import Account
+from datetime import date
+from dateutil.rrule import rrule, MONTHLY, WEEKLY
 from dateutil.relativedelta import relativedelta
-from dateutil.rrule import rrule, WEEKLY, MONTHLY
-	
+from django.db.models import Sum
+from decimal import Decimal
+
 class ForecastTemplateView(TemplateView):
 	template_name = 'forecast.html'	
 	
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
 
-		#Hard Coded 6 months
-		now = datetime.now()
-		ld = now + relativedelta(months=5)
-		last_day = datetime(ld.year, ld.month, monthrange(ld.month, ld.month)[1])
-		first_month = datetime(now.year, now.month, 1)
-		month_list= list(rrule(freq=MONTHLY, dtstart=first_month, interval=1, until=last_day))
+		today = date.today()
+		first_of_month = today.replace(day=1)
+		month_list = list(rrule(freq=MONTHLY, count = 12, dtstart=first_of_month))
+		
+		account_list=[]
+		accounts = Account.objects.all() #If accounts is empty this may fail
 
-#Group Category Spent CM M1 M2 M3 M4 M5
+		income_categories = Category.objects.filter(group__name='Income')
+		income_list=[]
+		
+		for income_category in income_categories:
+			earned = get_spent(None, income_category, today)
+			month_income_list, to_earn = get_scheduledbudget(None, income_category, earned, today, False, month_list)
+			to_earn, month_income_list = check_specific_budget(to_earn, month_income_list, month_list, None, income_category)
+			income_list.append((income_category, earned, to_earn , month_income_list))
 
-		#Income
-		income_month=[]
-		income_desc=[]
-		income_total=[]
+		total_income_list = [sum(income_list[i][1] for i in range(len(income_list)))] #Total Current Earned
+		total_income_list.append(sum(income_list[i][2] for i in range(len(income_list)))) #Total Current To Earn
+		for m in range(len(month_income_list)):
+			total_income_list.append(sum(income_list[i][3][m][1] for i in range(len(income_list))))
 		
-		categorygroup = CategoryGroup.objects.get(name='Income')
-		categories = Category.objects.filter(group=categorygroup)
-		
-		for category in categories:
-			st = ScheduledTransaction.objects.get(category=category)
-			payment_list = rrule(freq=WEEKLY, dtstart=st.scheduled_date, interval=2, until=last_day)
-			payments =[0]*len(month_list)
-			
-			#month_income=[]
-			for m in month_list:
-				payments=0
-				for p in payment_list:
-					if m.month == p.month:
-						payments+=1
-				income_month.append(payments*st.amount)
+		budget_list= get_budget(today, month_list)
+		total_budget_list = [sum(budget_list[i][0][1] for i in range(len(budget_list)))] # Total Current Spent
 
-			income_desc.append(category.name)
-		
-		income_total.append(categorygroup.name)
-		income_total.append([sum(income_month[i::len(month_list)]) for i in range(len(month_list))])
-		
-		income_month = [income_month[x:x+len(month_list)] for x in range(0,len(income_month),len(month_list))]
+		#Total for Current Month To Spend
+		to_spend = 0
+		for i in range(len(budget_list)):
+			#Group to Spend
+			if budget_list[i][0][2]: #Check if Group to Spend
+				to_spend += budget_list[i][0][2] #Group To Spend
+			#Category to Spend
+			else:
+				if budget_list[i]: ##Why i??
+					to_spend += (sum((budget_list[i][1][j][2] or 0) for j in range(len(budget_list[i][1])))) #Categories in Group
+		total_budget_list.append(to_spend)
 
-		income_list=zip(income_desc,income_month)
-
-####DOESNT INCLUDE SCHEDULDED ITEMS
-		#Budget
-		budget_month=[]
-		budget_desc=[]
-		budget_total=[]
-		
-		exclude_list=['Income','Credit Cards']
-		categorygroups = CategoryGroup.objects.all().exclude(name__in=exclude_list)
-		
-		for categorygroup in categorygroups:
-			for m in month_list:
-				group_spending = 0
-				#Has a Category Group Budget
-				if categorygroup.budget != 0:
-					budget=categorygroup.budget
+		#Rest of Months
+		for m in range(len(month_list[1:])):
+			total_month = 0
+			for i in range(len(budget_list)):
+				if budget_list[i][0][3]: #Checks if group budget
+					total_month += budget_list[i][0][3][m][1]
+				#Categories Rest of Month
 				else:
-					budget=0
+					for j in range(len(budget_list[i][1])):
+						if budget_list[i][1][j][3]:
+							total_month += budget_list[i][1][j][3][m][1]
+						
+			total_budget_list.append(total_month)
 			
-				#Categories in the Group
-				categories = Category.objects.filter(group=categorygroup)
-				for category in categories:
-					#If Category has budget than Group does not
-					#Add each category budget to get group budget
-					if category.budget:
-						budget += category.budget
-				
-					#Spending in Category Group
-					#Get all Transactions in the Category
-					transactions=Transaction.objects.filter(
-													category=category,
-													date__month=m.month,
-													date__year=m.year)
-					spending = transactions.aggregate(Sum('amount'))
-					if spending['amount__sum'] is None:
-						spending = 0
-					else:
-						spending = spending['amount__sum']
-			
-					group_spending += spending
-###Need to think about what is minusing 
-				if group_spending < budget:
-					budget = 0
-				else:
-					budget = budget - group_spending
-				
-				budget_month.append(budget)
-	
-			budget_desc.append(categorygroup.name)
+
+		net_list = [total_income_list[i] + total_budget_list[i] for i in range(len(total_budget_list))]
 		
-		budget_total.append('Total Budget')
-		budget_total.append([sum(budget_month[i::len(month_list)]) for i in range(len(month_list))])
-		budget_month = [budget_month[x:x+len(month_list)] for x in range(0,len(budget_month),len(month_list))]
-
-		budget_list=zip(budget_desc,budget_month)
-
-
-
+		#Account Balance
+		#Assumes Account[0] is Primary Bank Account
+		#Current Month
+		total_accounts = accounts.aggregate(Sum('balance'))
+		total_accounts = total_accounts['balance__sum']
+		current_month_balance = accounts[0].balance
+		account_balance_list = [current_month_balance]
 		
-		net_month=[]
-		net_month.append('Net')
-		net_month.append([budget_total[1][i]+income_total[1][i] for i in range(len(month_list))])
+		#Rest of Momths
+		month_balance = total_accounts #start with current_month - credit cards
+		for m in range(len(month_list[1:])):
+				month_balance = month_balance + net_list[m+1]
+				account_balance_list.append(month_balance)
 
+		context['accounts'] = accounts
+		context['account_balance_list'] = account_balance_list
 		context['month_list'] = month_list
-		
 		context['income_list'] = income_list
-		context['income_total'] = income_total
-		
+		context['total_income_list'] = total_income_list
+		context['total_budget_list'] = total_budget_list
 		context['budget_list'] = budget_list
-		context['budget_total'] = budget_total	
-		
-		context['net_month'] = net_month
-	
+		context['net_list'] = net_list
+
 		return context
 			

@@ -1,6 +1,7 @@
 from .forms import TransactionFormSet, ChooseFileForm, TransactionForm
 from .models import Transaction, ScheduledTransaction, SavedTransaction
 from category.models import Category
+from account.models import Account
 import csv
 import datetime
 from dateutil.relativedelta import relativedelta
@@ -9,11 +10,6 @@ from django.views.generic.edit import FormView, UpdateView
 from django.views.generic.list import ListView
 from django.urls import reverse
 from inthebank.views import view_title_context_data
-
-#Not use maybe in future
-#HOLIDAY = [(1,1),]
-
-
 
 #For Viewing all Transactions
 class TransactionListView(ListView):
@@ -60,11 +56,12 @@ class ChooseFileView(FormView):
 
 	def form_valid(self, form):
 		self.filename=form.cleaned_data['filename']
-		self.bank=form.cleaned_data['bank']
+		self.account=form.cleaned_data['account']
+		self.balance=form.cleaned_data['balance']
 		return super().form_valid(form)
 
 	def get_success_url(self, **kwargs):
-		return reverse('transaction-import', kwargs={'bank':self.bank,'filename':self.filename})
+		return reverse('transaction-import', kwargs={'account':self.account.pk,'filename':self.filename,'balance':self.balance})
 
 #Import File Formset FormView
 class TransactionImportView(FormView):
@@ -76,10 +73,11 @@ class TransactionImportView(FormView):
 	
 		initial=super(TransactionImportView, self).get_initial()
 		filename=self.kwargs['filename']
-		bank=self.kwargs['bank']
-		
+		account=self.kwargs['account']
+		balance=self.kwargs['balance']
+
 		with open(filename) as csvfile:
-			if bank == 'PC':
+			if account == 3:
 				next(csvfile)
 			readCSV = csv.reader(csvfile, delimiter=',')
 
@@ -90,7 +88,7 @@ class TransactionImportView(FormView):
 			#Import Data from CSV file
 			#Format is for TD or President's Choice
 			for row in readCSV:
-				if bank=='TD':
+				if account < 3:
 					date=datetime.datetime.strptime(row[0], '%m/%d/%Y').date()
 					description=row[1].strip()
 					if row[2]:
@@ -98,7 +96,7 @@ class TransactionImportView(FormView):
 						amount=amount*-1
 					if row[3]:
 						amount=Decimal(row[3].replace(',',''))
-				if bank=='PC':
+				if account == 3:
 					date=datetime.datetime.strptime(row[3], '%m/%d/%Y').date()
 					description=row[0].strip()
 					amount=Decimal(row[5])
@@ -139,6 +137,9 @@ class TransactionImportView(FormView):
 							category=st[0].category
 						
 					data_list.append([date,description,amount,category])
+			
+			#End For Row
+
 
 		#Initial data from import for Form
 		initial=[{'date': d, 'description':desc, 'amount':a, 'category':c} for d, desc, a, c in data_list ]
@@ -146,6 +147,10 @@ class TransactionImportView(FormView):
 		return initial
 	
 	def form_valid(self, formset):
+		account = Account.objects.get(pk=self.kwargs['account'])
+		account.balance = self.kwargs['balance']
+		account.save()
+
 		for form in formset:
 			t=form.save()
 			
