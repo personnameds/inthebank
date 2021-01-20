@@ -20,12 +20,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ycdg6$l1-eez5vpd3m)*o(x97&2fad7*3dm3x8r@2k39(_m767'
+SECRET_DIRECTORY=os.path.join(BASE_DIR,'inthebank')+'/SECRET_KEY'
+with open(SECRET_DIRECTORY) as f:
+    SECRET_KEY = f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = ['192.168.0.20','localhost','127.0.0.1']
 
 # Application definition
 
@@ -126,3 +126,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = ['static',]
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
+
+try:
+    from local_settings import *
+except ImportError:
+    pass

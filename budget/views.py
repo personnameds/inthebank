@@ -131,7 +131,7 @@ def get_scheduledbudget(categorygroup, category, spent, today, remainder, month_
 		budget_amount = ScheduledBudget.objects.get(categorygroup=categorygroup).amount
 	else:
 		budget_amount = ScheduledBudget.objects.get(category=category).amount
-	
+
 	month_budget = payment_list.count(today.month) * budget_amount
 	month_budget_left = get_budget_left(month_budget, remainder, spent)
 	
@@ -175,7 +175,7 @@ def get_lastyearbudget(categories, categorygroup, category, spent, today, remain
 #Get the Budget - Main Function
 def get_budget(today, month_list):
 	budget_list=[]
-	categorygroups = CategoryGroup.objects.all().exclude(name='Income').exclude(name='None')
+	categorygroups = CategoryGroup.objects.all().exclude(name='Income').exclude(name='None').exclude(name='Credit Cards')
 
 	for categorygroup in categorygroups:
 

@@ -3,6 +3,8 @@ from .models import Transaction, ScheduledTransaction, SavedTransaction
 from category.models import Category
 from account.models import Account
 import csv
+import os
+from inthebank.settings import BASE_DIR
 import datetime
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
@@ -76,7 +78,7 @@ class TransactionImportView(FormView):
 		account=self.kwargs['account']
 		balance=self.kwargs['balance']
 
-		with open(filename) as csvfile:
+		with open(os.path.join(BASE_DIR, filename)) as csvfile:
 			if account == 3:
 				next(csvfile)
 			readCSV = csv.reader(csvfile, delimiter=',')

@@ -4,3 +4,5 @@
 *.DS_Store
 .vs*
 env/
+SECRET_KEY
+local_settings.py

@@ -27,7 +27,7 @@ class ForecastTemplateView(TemplateView):
 		
 		for income_category in income_categories:
 			earned = get_spent(None, income_category, today)
-			month_income_list, to_earn = get_scheduledbudget(None, income_category, earned, today, False, month_list)
+			month_income_list, to_earn = get_scheduledbudget(None, income_category, earned, today, income_category.remainder, month_list)
 			to_earn, month_income_list = check_specific_budget(to_earn, month_income_list, month_list, None, income_category)
 			income_list.append((income_category, earned, to_earn , month_income_list))
 
