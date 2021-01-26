@@ -2,8 +2,6 @@ from .forms import TransactionFormSet, ChooseFileForm, TransactionForm
 from .models import Transaction, ScheduledTransaction, SavedTransaction
 from category.models import Category
 from account.models import Account
-import csv
-import os
 from inthebank.settings import BASE_DIR
 import datetime
 from dateutil.relativedelta import relativedelta
@@ -12,6 +10,10 @@ from django.views.generic.edit import FormView, UpdateView
 from django.views.generic.list import ListView
 from django.urls import reverse
 from inthebank.views import view_title_context_data
+import csv
+from io import StringIO
+import os
+import tempfile
 
 #For Viewing all Transactions
 class TransactionListView(ListView):
@@ -55,38 +57,48 @@ class TransactionUpdateView(UpdateView):
 class ChooseFileView(FormView):
 	template_name = 'choosefile.html'
 	form_class = ChooseFileForm
-
+	
 	def form_valid(self, form):
-		self.filename=form.cleaned_data['filename']
-		self.account=form.cleaned_data['account']
-		self.balance=form.cleaned_data['balance']
+		csvfile = form.cleaned_data['csvfile'].read()
+		
+		with tempfile.NamedTemporaryFile(mode='wb', delete=False) as tempcsvfile:
+			tempcsvfile.write(csvfile)
+		self.request.session['tempcsvfile'] = tempcsvfile.name
 		return super().form_valid(form)
-
+	
 	def get_success_url(self, **kwargs):
-		return reverse('transaction-import', kwargs={'account':self.account.pk,'filename':self.filename,'balance':self.balance})
+		'''
+	 	a = self.request.a
+		with open(a) as b:
+			c = csv.reader(b, delimiter=',')
+		os.remove(a)
+		'''
+		account=self.request.POST['account']
+		balance=self.request.POST['balance']
+		return reverse('transaction-import', kwargs={'account':account, 'balance':balance})
 
 #Import File Formset FormView
 class TransactionImportView(FormView):
 	template_name = 'transaction_import.html'
 	success_url = '/'
 	form_class = TransactionFormSet
-
-	def get_initial(self):
 	
-		initial=super(TransactionImportView, self).get_initial()
-		filename=self.kwargs['filename']
-		account=self.kwargs['account']
-		balance=self.kwargs['balance']
+	def get_initial(self):
 
-		with open(os.path.join(BASE_DIR, filename)) as csvfile:
+		initial=super(TransactionImportView, self).get_initial()
+		account=int(self.kwargs['account'])
+		balance=Decimal(self.kwargs['balance'])
+		tempcsvfile = self.request.session['tempcsvfile']
+
+		data_list=[]
+		no_cat = Category.objects.get(name='None') #Needs to be setup ahead or will fail
+
+		with open(tempcsvfile) as csvfile:
 			if account == 3:
 				next(csvfile)
+
 			readCSV = csv.reader(csvfile, delimiter=',')
 
-			data_list=[]
-			
-			no_cat = Category.objects.get(name='None') #Needs to be setup ahead or will fail
-	
 			#Import Data from CSV file
 			#Format is for TD or President's Choice
 			for row in readCSV:
@@ -140,14 +152,13 @@ class TransactionImportView(FormView):
 						
 					data_list.append([date,description,amount,category])
 			
-			#End For Row
+				#End For Row
 
 
 		#Initial data from import for Form
 		initial=[{'date': d, 'description':desc, 'amount':a, 'category':c} for d, desc, a, c in data_list ]
-		
 		return initial
-	
+
 	def form_valid(self, formset):
 		account = Account.objects.get(pk=self.kwargs['account'])
 		account.balance = self.kwargs['balance']
@@ -163,4 +174,6 @@ class TransactionImportView(FormView):
 				scdt[0].save()
 
 		return super().form_valid(form)
+	
+
 		

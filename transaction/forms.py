@@ -6,9 +6,10 @@ from category.fields import GroupedModelChoiceField
 from django.conf import settings
 
 class ChooseFileForm(forms.Form):
-	filename=forms.CharField(max_length=50)
+	#filename=forms.CharField(max_length=50)
 	account = forms.ModelChoiceField(queryset=Account.objects.all())
 	balance = forms.DecimalField(max_digits=8, decimal_places=2)
+	csvfile = forms.FileField()
 
 
 class TransactionForm(forms.ModelForm):
@@ -20,10 +21,9 @@ class TransactionForm(forms.ModelForm):
 		choices_groupby='group',
 		required=False
 	)
-
 		
 	class Meta:
 		model = Transaction
 		fields = ['date', 'description', 'amount', 'category']
 		
-TransactionFormSet = forms.formset_factory(TransactionForm, max_num=0)
+TransactionFormSet = forms.formset_factory(TransactionForm, extra=0)

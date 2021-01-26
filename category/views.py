@@ -8,7 +8,6 @@ from decimal import Decimal
 from django.db.models import Sum
 from inthebank.views import view_title_context_data
 from django.urls import reverse
-	
 
 class CategoryListView(ListView):
 	model = CategoryGroup
@@ -95,7 +94,7 @@ class SpendingView(TemplateView):
 			
 			group_list=(cat_group,group_sum,cat_list)
 			spending_list.append(group_list)	
-	
+
 		context['spending_list']=spending_list
 	
 		return context

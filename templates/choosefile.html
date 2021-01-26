@@ -5,7 +5,7 @@
 {% block main_content %}
 	<h1>Enter Filename</h1>
 	
-	<form method="post">{% csrf_token %}
+	<form method="post" enctype="multipart/form-data">{% csrf_token %}
     	{{ form | crispy }}
    	 <input type="submit" value="Import">
 	</form>
