@@ -6,19 +6,52 @@
 	<table class="table table-sm">
 		<thead>
 			<tr class="table-primary">
-				<th scope="col">Name</th>
+				<th scope="col">Account</th>
 				<th scope="col">Balance</th>
 			</tr>
 		</thead>	
 		<tbody>
 			
 			{% for account in account_list %}
+				{% if not account.is_creditcard %}
 				<tr class>
-					<td>{{account.name}}</td>
+					<td>
+						<a class="nav-link" href="{% url 'account-update' account.pk %}">
+						{{account.name}}</a>
+					</td>
 					<td>{{account.balance}}</td>
 				</tr>
+				{% endif %}
 			{% endfor %}
-			
 		</tbody>
+
+		<table class="table table-sm">
+			<thead>
+				<tr class="table-primary">
+					<th scope="col">Credit Card</th>
+					<th scope="col">Statement Balance</th>
+					<th scope="col">Bill Date</th>
+					<th scope="col">Schedule Payment</th>
+					<th scope="col">Payment Amount</th>
+				</tr>
+			</thead>	
+			<tbody>
+				
+				{% for account in account_list %}
+					{% if account.is_creditcard %}
+						{% for creditcard in account.creditcard_set.all %}
+							<tr class>
+								<td>
+									<a class="nav-link" href="{% url 'creditcard-update' creditcard.pk %}">
+									{{account.name}}</a>
+								</td>
+								<td>{{creditcard.statement_balance}}</td>
+								<td>{{creditcard.bill_date}}</td>
+								<td>{{creditcard.payment_scheduled_date}}</td>
+								<td>{{creditcard.payment_scheduled_amount}}</td>
+							</tr>
+						{% endfor %}
+					{% endif %}
+				{% endfor %}
+			</tbody>
 {% endblock %}
-		
