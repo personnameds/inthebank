@@ -29,6 +29,7 @@
 			<thead>
 				<tr class="table-primary">
 					<th scope="col">Credit Card</th>
+					<th scope="col">Current Balance</th>
 					<th scope="col">Statement Balance</th>
 					<th scope="col">Bill Date</th>
 					<th scope="col">Schedule Payment</th>
@@ -45,6 +46,7 @@
 									<a class="nav-link" href="{% url 'creditcard-update' creditcard.pk %}">
 									{{account.name}}</a>
 								</td>
+								<td>{{account.balance}}</td>
 								<td>{{creditcard.statement_balance}}</td>
 								<td>{{creditcard.bill_date}}</td>
 								<td>{{creditcard.payment_scheduled_date}}</td>
