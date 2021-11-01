@@ -2,9 +2,23 @@
 Here are the steps to get this app running locally.
 
 ### Clone the repository
+
+####  Generate a new secret key
+
+I like using [Djecrety](https://djecrety.ir/) to quickly generate secure secret keys.
+
 ```
-$ git clone git@github.com:personnameds/inthebank.git
+vim inthebank/SECRET_KEY
+export SECRET_KEY='<secret_keys>'
+```
+
+#### Run using docker:
+
+```
+$ docker-compose up
  ```
+
+or to run without docker: 
 
 #### Create your own virtual environment
 ```
@@ -17,15 +31,6 @@ Virtual environments are where dependencies are stored, similar to node_modules 
 #### Install your requirements
 ```
 $ pip install -r requirements.txt
-```
-
-####  Generate a new secret key
-
-I like using Djecrety to quickly generate secure secret keys.
-
-```
-vim inthebank/SECRET_KEY
-export SECRET_KEY='<secret_keys>'
 ```
 
 #### Create a new superuser
