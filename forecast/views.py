@@ -19,7 +19,6 @@ class ForecastTemplateView(TemplateView):
 		first_of_month = today.replace(day=1)
 		month_list = list(rrule(freq=MONTHLY, count = 12, dtstart=first_of_month))
 		
-		account_list=[]
 		accounts = Account.objects.all() #If accounts is empty this may fail
 
 		income_categories = Category.objects.filter(group__name='Income')
@@ -61,6 +60,9 @@ class ForecastTemplateView(TemplateView):
 				else:
 					for j in range(len(budget_list[i][1])):
 						if budget_list[i][1][j][3]:
+							ai=budget_list[i]
+							aj=budget_list[i][1][j]
+							athething=budget_list[i][1][j][3][m][1]
 							total_month += budget_list[i][1][j][3][m][1]
 						
 			total_budget_list.append(total_month)

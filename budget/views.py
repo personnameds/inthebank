@@ -62,7 +62,7 @@ def get_budget_left(month_budget,remainder, spent):
 		budget_left = month_budget
 	return budget_left
 
-#Constant Budget
+#Constant Budget for Year
 def get_constantbudget(categorygroup, category, spent, remainder, month_list):
 	if categorygroup:
 		month_budget = ConstantBudget.objects.get(categorygroup=categorygroup).amount
@@ -78,7 +78,15 @@ def get_constantbudget(categorygroup, category, spent, remainder, month_list):
 
 	return month_budget_list, month_budget_left
 
-#Avg Quarter Budget
+#Constant Budget for Month
+def get_month_constantbudget(categorygroup, category):
+	if categorygroup:
+		month_budget = ConstantBudget.objects.get(categorygroup=categorygroup).amount
+	else:
+		month_budget = ConstantBudget.objects.get(category=category).amount
+	return month_budget
+
+#Avg Quarter Budget for Year
 def get_avgquarterbudget(categories, categorygroup, category, spent, today, remainder, month_list):
 
 	from_date = today.replace(day=1)
@@ -103,7 +111,23 @@ def get_avgquarterbudget(categories, categorygroup, category, spent, today, rema
 	
 	return month_budget_list, month_budget_left
 
-#Scheduled Budget
+#Avg Quarter Budget for Month
+def get_month_avgquarterbudget(categories, category,today):
+	from_date = today.replace(day=1)
+	to_date = today.replace(day=1)							
+	from_date = from_date + relativedelta(months=-3)
+	to_date = to_date + relativedelta(days=-1)
+	
+	if categories:
+		month_budget = Transaction.objects.filter(category__in=categories, date__gte=from_date, date__lte=to_date).aggregate(Sum('amount'))
+	else:
+		month_budget = Transaction.objects.filter(category=category, date__gte=from_date, date__lte=to_date).aggregate(Sum('amount'))
+	month_budget = month_budget['amount__sum'] or 0
+	month_budget = month_budget/3
+
+	return month_budget
+
+#Scheduled Budget for Year
 def get_scheduledbudget(categorygroup, category, spent, today, remainder, month_list):
 	if categorygroup:
 		sb_object = ScheduledBudget.objects.get(categorygroup=categorygroup)
@@ -140,7 +164,37 @@ def get_scheduledbudget(categorygroup, category, spent, today, remainder, month_
 	
 	return month_budget_list, month_budget_left
 
-#Year Budget
+#Scheduled Budget for Month
+def get_month_scheduledbudget(categorygroup, category, today):
+	if categorygroup:
+		sb_object = ScheduledBudget.objects.get(categorygroup=categorygroup)
+	else:
+		sb_object = ScheduledBudget.objects.get(category=category)
+
+	budget_amount = sb_object.amount
+	last_date = sb_object.last_date
+
+	#Finds payments based on last date
+	#For first time, may miss a payment if last_date entered by user is not first payment that month
+	#Code needs to always save last_date as the first payment that month each time
+	
+	#Iterates from that Original Scheduled Payment Date until
+	#it finds the first payment date of the current month
+	last_day_month = today.replace(day=monthrange(today.year,today.month)[1])
+	from_date = rrule(freq=WEEKLY, interval=2, dtstart=last_date, until=last_day_month)
+	from_date = [fd for fd in from_date if fd.month == today.month][0]
+	sb_object.last_date = from_date
+	sb_object.save()
+
+	payment_list = list(rrule(freq=WEEKLY, interval=2, dtstart=from_date, until=last_day_month))
+	
+
+	month_budget = len(payment_list) * budget_amount
+
+	return month_budget
+
+
+#Last Year Budget for Year
 def get_lastyearbudget(categories, categorygroup, category, spent, today, remainder, month_list):
 	
 	from_date = today.replace(day=1)
@@ -172,6 +226,23 @@ def get_lastyearbudget(categories, categorygroup, category, spent, today, remain
 
 	return month_budget_list, month_budget_left
 
+#Last Year Budget for Month
+def get_month_lastyearbudget(categories, category, today):
+	
+	from_date = today.replace(day=1)
+	from_date = from_date + relativedelta(years=-1)
+	to_date = today + relativedelta(years=-1)
+	to_date = to_date.replace(day=monthrange(to_date.year,to_date.month)[1])
+
+	if categories:
+		month_budget = Transaction.objects.filter(category__in=categories, date__gte=from_date, date__lte=to_date).aggregate(Sum('amount'))
+	else:
+		month_budget = Transaction.objects.filter(category=category, date__gte=from_date, date__lte=to_date).aggregate(Sum('amount'))
+
+	month_budget = month_budget['amount__sum'] or 0
+
+	return month_budget
+
 #Get the Budget - Main Function
 def get_budget(today, month_list):
 	budget_list=[]
@@ -200,7 +271,6 @@ def get_budget(today, month_list):
 				month_budget_list, budget_left = get_lastyearbudget(categories, categorygroup, None, spent, today, categorygroup.remainder, month_list)
 		else:
 			budget_left = None
-			month_budget = None
 			month_budget_list = None
 			
 		group_list=(categorygroup, spent, budget_left, month_budget_list)
@@ -226,7 +296,6 @@ def get_budget(today, month_list):
 					month_budget_list, budget_left = get_lastyearbudget(None, None, category, spent, today, category.remainder, month_list)
 			else:
 				budget_left = None
-				month_budget = None
 				month_budget_list = None
 			
 			category_list.append((category, spent, budget_left, month_budget_list))

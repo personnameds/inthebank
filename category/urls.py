@@ -1,6 +1,6 @@
 from django.urls import path, register_converter
 from .views import CategoryListView, SpendingView, SpendingFilterFormView, SpendingFilterView
-from .views import CategoryGroupUpdateView, CategoryUpdateView
+from .views import CategoryGroupUpdateView, CategoryUpdateView, CategoryDeleteView
 from datetime import datetime
 
 
@@ -19,6 +19,7 @@ urlpatterns = [
     path('', CategoryListView.as_view(), name='category-list'),
     path('update/group/<int:pk>/', CategoryGroupUpdateView.as_view(), name='category-group-update'),
     path('update/cat/<int:pk>/', CategoryUpdateView.as_view(), name='category-update'),
+    path('delete/cat/<int:pk>/', CategoryDeleteView.as_view(), name='category-delete'),
     path('spending/', SpendingView.as_view(), name='spending-list'),
     path('spending/<int:year>/<int:month>/', SpendingView.as_view(), name='spending-list'),
     path('spending/<int:year>/<int:month>/', SpendingView.as_view(), name='spending-list'),

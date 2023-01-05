@@ -4,7 +4,7 @@
 
 {% block main_content %}
 	<h1>Categories</h1>
-	
+	Add Category Group
 	<table clase="table">
 	<tbody>
 	{% for category_group in category_group_list %}
@@ -14,9 +14,17 @@
 		{% for category in category_group.category_set.all %}
 			<tr class="table-secondar">
 				<td>{{category}}</td>
+				<td>Remove - coming soon</td>
+				<!--
+					<td><a class="nav-link" href="{% url 'category-delete' category.pk %}">Remove</a></td>
+					Will remove category but not delete it
+				-->
 			</tr>
 		{% endfor %}		
+			<tr><td></td><td>Add Category to Group</td></tr>
 	{% endfor %}
 	</tbody>
 	</table>	
 {% endblock %}
+
+
