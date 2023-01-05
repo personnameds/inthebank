@@ -1,6 +1,6 @@
 from django.views.generic import ListView
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import UpdateView, FormView
+from django.views.generic.edit import UpdateView, FormView, DeleteView
 from .forms import FilterForm
 from .models import Category, CategoryGroup
 from budget.models import ConstantBudget, ScheduledBudget
@@ -57,6 +57,14 @@ class CategoryUpdateView(UpdateView):
 			else:
 				return reverse('scheduledbudget-create', kwargs={'group_pk':None, 'cat_pk':self.object.pk})
 		return reverse('budget-list')
+
+class CategoryDeleteView(DeleteView):
+	model = Category
+	template_name = 'category_confirm_delete.html'
+	
+	def get_success_url(self):
+		return reverse('category-list')
+
 
 class SpendingView(TemplateView):
 	template_name='spending_list.html'
