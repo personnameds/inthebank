@@ -1,9 +1,5 @@
-/env
 *.pyc
-*.csv
-*.DS_Store
 .vs*
-env/
 SECRET_KEY
 local_settings.py
 db.sqlite3
