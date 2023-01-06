@@ -120,6 +120,6 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 try:
-    from local_settings import *
+    from .local_settings import *
 except ImportError:
     pass

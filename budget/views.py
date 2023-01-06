@@ -174,22 +174,14 @@ def get_month_scheduledbudget(categorygroup, category, today):
 	budget_amount = sb_object.amount
 	last_date = sb_object.last_date
 
-	#Finds payments based on last date
-	#For first time, may miss a payment if last_date entered by user is not first payment that month
-	#Code needs to always save last_date as the first payment that month each time
-	
-	#Iterates from that Original Scheduled Payment Date until
-	#it finds the first payment date of the current month
 	last_day_month = today.replace(day=monthrange(today.year,today.month)[1])
 	from_date = rrule(freq=WEEKLY, interval=2, dtstart=last_date, until=last_day_month)
-	from_date = [fd for fd in from_date if fd.month == today.month][0]
-	sb_object.last_date = from_date
+	from_date = [fd for fd in from_date if fd.month == today.month]
+
+	sb_object.last_date = from_date[0]
 	sb_object.save()
 
-	payment_list = list(rrule(freq=WEEKLY, interval=2, dtstart=from_date, until=last_day_month))
-	
-
-	month_budget = len(payment_list) * budget_amount
+	month_budget = len(from_date) * budget_amount
 
 	return month_budget
 
