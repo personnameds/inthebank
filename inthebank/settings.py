@@ -11,7 +11,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #SECRET_DIRECTORY=os.path.join(BASE_DIR,'inthebank')+'/SECRET_KEY'
 #with open(SECRET_DIRECTORY) as f:
 #    SECRET_KEY = f.read().strip()
-SECRET_KEY='oeigu37n7+p-#%g4ja)nu79gu15f@%v7@2ky12op*f-2+y48oy'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

@@ -20,10 +20,10 @@ class EnvelopeView(TemplateView):
         income_category = Category.objects.get(name='TDSB')       
         earned = get_spent(None, income_category, today)
         to_earn = get_month_scheduledbudget(None, income_category, today)
-        total = [0] * 3
+        total = [0] * 5
         total[0] = earned
         total[1] = to_earn
-
+        
         try: 
             carryover = Envelope.objects.get(category=income_category, date__month=last_month.month, date__year=last_month.year).carryover
         except Envelope.DoesNotExist:
@@ -52,6 +52,9 @@ class EnvelopeView(TemplateView):
             income_envelope.save()
 
         total[2] = income_envelope.amount
+        total[3] = plus_minus
+        total[4] = carryover
+
         income_list=(income_category, earned, to_earn, income_envelope)
 
 ## End of Income
@@ -66,7 +69,7 @@ class EnvelopeView(TemplateView):
             categories = Category.objects.filter(group=category_group)
             group_spent = get_spent(categories, None, today)
             total[0] += group_spent
-
+            
             try: 
                 carryover = Envelope.objects.get(categorygroup=category_group, date__month=last_month.month, date__year=last_month.year).carryover
             except Envelope.DoesNotExist:
@@ -89,6 +92,7 @@ class EnvelopeView(TemplateView):
                 total[1] += month_budget
             else:
                 month_budget = None
+                plus_minus = 0    
 
             try:
                 group_envelope = Envelope.objects.get(categorygroup=category_group, date__month=today.month, date__year=today.year)  
@@ -116,8 +120,12 @@ class EnvelopeView(TemplateView):
 
                 else:
                     group_envelope = None
-                    amount = 0            
+                    amount = 0
+                    plus_minus = 0
+                            
             total[2] += amount
+            total[3] += plus_minus
+            total[4] += carryover
 
             category_group_list = ((category_group, group_spent, month_budget, group_envelope))
             categories_list = []
@@ -150,6 +158,7 @@ class EnvelopeView(TemplateView):
                     total[1] += month_budget
                 else:
                     month_budget = None
+                    plus_minus = 0
 			
                 try:
                     category_envelope = Envelope.objects.get(category=category, date__month=today.month, date__year=today.year)  
@@ -176,8 +185,12 @@ class EnvelopeView(TemplateView):
                         category_envelope.save()
                     else:
                         category_envelope = None
-                        amount = 0           
+                        amount = 0
+                        plus_minus = 0
+
                 total[2] += amount
+                total[3] += plus_minus
+                total[4] += carryover
                 
                 categories_list.append((category, spent, month_budget, category_envelope))
 

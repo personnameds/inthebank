@@ -50,7 +50,7 @@
 					</td></a>
 				{% else %}
 					<td><a class="nav-link" href="{% url 'envelope-create' group.0.0.pk None %}">
-						{{group.0.3.amount|floatformat:"2"}}
+						&emsp;+
 					</td></a>
 				{% endif %}
 				<td>{{group.0.3.plus_minus|floatformat:"2"}}</td>
@@ -68,7 +68,7 @@
 					</td></a>
 					{% else %}
 					<td><a class="nav-link" href="{% url 'envelope-create' None cat.0.pk %}">
-						{{cat.3.amount|floatformat:"2"}}
+						&emsp;+
 					</td></a>
 					{% endif %}
 					<td>{{cat.3.plus_minus|floatformat:"2"}}</td>
@@ -82,7 +82,8 @@
 			<td>{{total.0|floatformat:"2"}}</td>
 			<td>{{total.1|floatformat:"2"}}</td>
 			<td>{{total.2|floatformat:"2"}}</td>
-
+			<td>{{total.3|floatformat:"2"}}</td>
+			<td>{{total.4|floatformat:"2"}}</td>
 		</tr>
 	</table>	
 
