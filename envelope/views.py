@@ -12,14 +12,38 @@ class EnvelopeView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-    
+        
         today = date.today()
-        last_month = today + relativedelta(months=-1)
-    
-## Start of Income
+        
+
+##Viewing Date (Currently has a Hard Stop of January 2023)
+        if self.kwargs:
+            view_date = date(self.kwargs['year'],self.kwargs['month'],1)
+        else:
+            view_date = today
+        last_month = view_date + relativedelta(months=-1)
+        
+        if view_date.year >= 2023 and view_date.month > 1:
+            view_date = date(view_date.year,view_date.month,1)
+            prev = view_date + relativedelta(months=-1)
+        elif view_date.year == 2023 and view_date.month == 1:
+            prev = None
+        if view_date.year == today.year and view_date.month == today.month:
+            next = None
+        else:
+            next = view_date + relativedelta(months=+1)
+
+        context['view_date'] = view_date
+        context['prev'] = prev
+        context['next'] = next
+
+##Start of Income
         income_category = Category.objects.get(name='TDSB')       
-        earned = get_spent(None, income_category, today)
-        to_earn = get_month_scheduledbudget(None, income_category, today)
+        earned = get_spent(None, income_category, view_date)
+        if view_date.month == today.month: #Doesn't work for past month, defaults to 0
+            to_earn = get_month_scheduledbudget(None, income_category, view_date)
+        else:
+            to_earn = 0
         total = [0] * 5
         total[0] = earned
         total[1] = to_earn
@@ -30,24 +54,30 @@ class EnvelopeView(TemplateView):
             carryover = 0        
 
         try:
-            income_envelope = Envelope.objects.get(category=income_category, date__month=today.month, date__year=today.year)  
+            income_envelope = Envelope.objects.get(category=income_category, date__month=view_date.month, date__year=view_date.year)  
             plus_minus = earned - income_envelope.amount
-            carryover += plus_minus
-            income_envelope.date = today
+            if earned != 0:
+                carryover += plus_minus
+            else:
+                carryover = carryover
+            income_envelope.date = view_date
             income_envelope.plus_minus = plus_minus
             income_envelope.carryover = carryover
             income_envelope.save()
 
         except Envelope.DoesNotExist:
             plus_minus = earned - to_earn
-            carryover += plus_minus            
+            if earned != 0:
+                carryover += plus_minus            
+            else:
+                carryover = carryover
             income_envelope = Envelope(
                 category = income_category,
                 categorygroup = income_category.group,
                 amount = to_earn,
                 plus_minus = plus_minus,
                 carryover = carryover,
-                date = today,
+                date = view_date,
                 )
             income_envelope.save()
 
@@ -67,7 +97,7 @@ class EnvelopeView(TemplateView):
         for category_group in category_groups:                      
             #List of categories in the group
             categories = Category.objects.filter(group=category_group)
-            group_spent = get_spent(categories, None, today)
+            group_spent = get_spent(categories, None, view_date)
             total[0] += group_spent
             
             try: 
@@ -82,39 +112,48 @@ class EnvelopeView(TemplateView):
                     month_budget = get_month_constantbudget(category_group,None)
 			    #Avg over Quarter
                 elif category_group.budget_method == 'A':
-                    month_budget = get_month_avgquarterbudget(categories, None, today)
+                    month_budget = get_month_avgquarterbudget(categories, None, view_date)
                 #Scheduled
-                elif category_group.budget_method == 'S':
-                    month_budget = get_month_scheduledbudget(category_group, None,today)
+                elif category_group.budget_method == 'S': #Doesn't work for past month, defaults to 0
+                    if view_date.month == today.month:
+                        month_budget = get_month_scheduledbudget(category_group, None,view_date)
+                    else:
+                        month_budget = 0
 			    #Last Year
                 elif category_group.budget_method == 'Y':
-                    month_budget = get_month_lastyearbudget(categories, None, today)
+                    month_budget = get_month_lastyearbudget(categories, None, view_date)
                 total[1] += month_budget
             else:
                 month_budget = None
                 plus_minus = 0    
 
             try:
-                group_envelope = Envelope.objects.get(categorygroup=category_group, date__month=today.month, date__year=today.year)  
+                group_envelope = Envelope.objects.get(categorygroup=category_group, date__month=view_date.month, date__year=view_date.year)  
                 amount = group_envelope.amount
                 plus_minus = group_spent - amount
-                carryover += plus_minus
+                if group_spent != 0:
+                    carryover += plus_minus
+                else:
+                    carryover = carryover
                 group_envelope.plus_minus = plus_minus
                 group_envelope.carryover = carryover
-                group_envelope.date = today
+                group_envelope.date = view_date
                 group_envelope.save()
 
             except Envelope.DoesNotExist:
                 if month_budget or carryover > 0:
                     plus_minus = group_spent - month_budget
-                    carryover += plus_minus
+                    if group_spent != 0:
+                        carryover += plus_minus
+                    else:
+                        carryover = carryover
                     amount = month_budget  
                     group_envelope = Envelope(
                         categorygroup = category_group,
                         amount = amount,
                         plus_minus = plus_minus,
                         carryover = carryover,
-                        date = today,
+                        date = view_date,
                         )
                     group_envelope.save()
 
@@ -132,7 +171,7 @@ class EnvelopeView(TemplateView):
 
             #Each Category in the group
             for category in categories:
-                spent = get_spent(None, category, today)	
+                spent = get_spent(None, category, view_date)	
                 group_spent += spent
                 total[0] += spent
 
@@ -148,39 +187,48 @@ class EnvelopeView(TemplateView):
                         month_budget = get_month_constantbudget(None, category)
 			        #Avg over Quarter
                     elif category.budget_method == 'A':
-                        month_budget = get_month_avgquarterbudget(None, category, today)
+                        month_budget = get_month_avgquarterbudget(None, category, view_date)
                     #Scheduled
-                    elif category.budget_method == 'S':
-                        month_budget = get_month_scheduledbudget(None, category,today)
+                    elif category.budget_method == 'S': #Doesn't work for past month, defaults to 0
+                        if view_date.month == today.month:
+                            month_budget = get_month_scheduledbudget(None, category, view_date)
+                        else:
+                            month_budget = 0
 			        #Last Year
                     elif category.budget_method == 'Y':
-                        month_budget = get_month_lastyearbudget(None, category, today)
+                        month_budget = get_month_lastyearbudget(None, category, view_date)
                     total[1] += month_budget
                 else:
                     month_budget = None
                     plus_minus = 0
 			
                 try:
-                    category_envelope = Envelope.objects.get(category=category, date__month=today.month, date__year=today.year)  
+                    category_envelope = Envelope.objects.get(category=category, date__month=view_date.month, date__year=view_date.year)  
                     amount = category_envelope.amount
                     plus_minus = spent - amount
-                    carryover += plus_minus
+                    if spent != 0:
+                        carryover += plus_minus
+                    else:
+                        carryover == carryover
                     category_envelope.plus_minus = plus_minus
                     category_envelope.carryover = carryover
-                    category_envelope.date = today
+                    category_envelope.date = view_date
                     category_envelope.save()
 
                 except Envelope.DoesNotExist:
                     if month_budget or carryover > 0:
                         amount = month_budget
                         plus_minus = spent - month_budget
-                        carryover += plus_minus            
+                        if spent != 0:
+                            carryover += plus_minus            
+                        else:
+                            carryover = carryover
                         category_envelope = Envelope(
                             category = category,
                             amount = amount,
                             plus_minus = plus_minus,
                             carryover = carryover,
-                            date = today,
+                            date = view_date,
                             )
                         category_envelope.save()
                     else:
