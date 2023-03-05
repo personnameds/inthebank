@@ -18,23 +18,21 @@
 			<td scope="col">Earned</td>
 			<td scope="col">To Earn</td>
 			<td scope="col">Envelope</td>
-			<td scope="col">Plus/Minus</td>
-			<td scope="col">Carry Over</td>
+			<td scope="col">Last Month</td>
 		</tr>
 		<tr>
 			<td colspan="2">{{income_list.0.name}}</td>
 			<td>{{income_list.1|floatformat:"2"|default:"0.00"}}</td>
 			<td>{{income_list.2|floatformat:"2"}}</td>
 			{% if income_list.3.pk %}
-			<td><a class="nav-link" href="{% url 'envelope-update' income_list.3.pk %}">
-				{{income_list.3.amount|floatformat:"2"}}
-			</td></a>
+				<td><a class="nav-link" href="{% url 'envelope-update' income_list.3.pk %}">
+					{{income_list.3.amount|floatformat:"2"}}
+				</td></a>
 			{% else %}
-			<td><a class="nav-link" href="{% url 'envelope-create' None income_list.3.pk %}">
-				{{income_list.3.amount|floatformat:"2"}}
-			</td></a>
+				<td><a class="nav-link" href="{% url 'envelope-create' None income_list.0.pk %}">
+					&emsp;+
+				</td></a>
 			{% endif %}
-			<td>{{income_list.3.plus_minus|floatformat:"2"}}</td>
 			<td>{{income_list.3.carryover|floatformat:"2"}}</td>
 		</tr>
 		<!-- End of Income -->
@@ -45,8 +43,7 @@
 			<td scope="col">Spent</td>
 			<td scope="col">Budget</td>
 			<td scope="col">Envelope</td>
-			<td scope="col">Plus/Minus</td>
-			<td scope="col">Carry Over</td>
+			<td scope="col">Last Month</td>
 		</tr>
 		{% for group in spent_list %}
 			<tr class="table-secondary">
@@ -62,7 +59,6 @@
 						&emsp;+
 					</td></a>
 				{% endif %}
-				<td>{{group.0.3.plus_minus|floatformat:"2"}}</td>
 				<td>{{group.0.3.carryover|floatformat:"2"}}</td>
 			</tr>
 			{% for cat in group.1 %}
@@ -80,7 +76,6 @@
 						&emsp;+
 					</td></a>
 					{% endif %}
-					<td>{{cat.3.plus_minus|floatformat:"2"}}</td>
 					<td>{{cat.3.carryover|floatformat:"2"}}</td>
 				</tr>
 			{% endfor %}
@@ -91,8 +86,6 @@
 			<td>{{total.0|floatformat:"2"}}</td>
 			<td>{{total.1|floatformat:"2"}}</td>
 			<td>{{total.2|floatformat:"2"}}</td>
-			<td>{{total.3|floatformat:"2"}}</td>
-			<td>{{total.4|floatformat:"2"}}</td>
 		</tr>
 	</table>	
 
