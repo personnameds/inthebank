@@ -1,8 +1,7 @@
 from .forms import TransactionFormSet, ChooseFileForm, TransactionForm
-from .models import Transaction, ScheduledTransaction, SavedTransaction
+from .models import Transaction
 from category.models import Category
 from account.models import Account
-from inthebank.settings import BASE_DIR
 import datetime
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
@@ -11,8 +10,6 @@ from django.views.generic.list import ListView
 from django.urls import reverse
 from inthebank.views import view_title_context_data
 import csv
-from io import StringIO
-import os
 import tempfile
 
 #For Viewing all Transactions
@@ -67,12 +64,6 @@ class ChooseFileView(FormView):
 		return super().form_valid(form)
 	
 	def get_success_url(self, **kwargs):
-		'''
-	 	a = self.request.a
-		with open(a) as b:
-			c = csv.reader(b, delimiter=',')
-		os.remove(a)
-		'''
 		account=self.request.POST['account']
 		balance=self.request.POST['balance']
 		return reverse('transaction-import', kwargs={'account':account, 'balance':balance})
@@ -80,14 +71,12 @@ class ChooseFileView(FormView):
 #Import File Formset FormView
 class TransactionImportView(FormView):
 	template_name = 'transaction_import.html'
-	success_url = '/'
 	form_class = TransactionFormSet
 	
 	def get_initial(self):
 
 		initial=super(TransactionImportView, self).get_initial()
 		account=int(self.kwargs['account'])
-		balance=Decimal(self.kwargs['balance'])
 		tempcsvfile = self.request.session['tempcsvfile']
 
 		data_list=[]
@@ -123,41 +112,35 @@ class TransactionImportView(FormView):
 					)
 
 				if not duplicate:
-					#Looks for older matching transactions so can apply category
-					t=Transaction.objects.filter(description=description)
-					category = no_cat
-					
-					if t:
-						#Looks for saved transactions so can apply saved category
-						#This catches transactions with the same name but different amount, Condo Fees
-						st=SavedTransaction.objects.filter(description=description, amount=amount)
-						if st:
-							category=st[0].category
+					#Find Category by looking at older transactions
+					#Filters most to least
+					#First matching first 5 characters
+					t=Transaction.objects.filter(description__contains=description[:5]).order_by('-date')
+					te = t.filter(description__contains='***') #E-Transfers
+					if te:
+						te = te.filter(amount=amount)
+						if te:
+							category = te[0].category
 						else:
-							category=t[0].category
-					else:
-						#Looks for saved E-Transfers transfers
-						#Rent, Music lessons ***
-						temp_description = description[:-3]					
-						st=SavedTransaction.objects.filter(description=temp_description, amount=amount)
-						if st:
-							category=st[0].category
-						
-						#Looks for bank transfer
-						#RESP
-						temp_description = description[6:]					
-						st=SavedTransaction.objects.filter(description=temp_description, amount=amount)
-						if st:
-							category=st[0].category
-						
-					data_list.append([date,description,amount,category])
-			
+							category = no_cat
+					elif t: #If first 5 characters match
+						category = t[0].category
+						t=t.filter(description=description).order_by('-date')
+						if t: #If entire description matches
+							category = t[0].category
+							t=t.filter(description=description, amount=amount).order_by('-date')
+							if t: #If desription and amount matches
+								category = t[0].category
+					else: #If no match
+						category = no_cat
+					data_list.append([date,description,amount,category])			
+					
 				#End For Row
-
 
 		#Initial data from import for Form
 		initial=[{'date': d, 'description':desc, 'amount':a, 'category':c} for d, desc, a, c in data_list ]
 		return initial
+
 
 	def form_valid(self, formset):
 		account = Account.objects.get(pk=self.kwargs['account'])
@@ -165,15 +148,11 @@ class TransactionImportView(FormView):
 		account.save()
 
 		for form in formset:
+			pass
 			t=form.save()
-			
-			scdt=ScheduledTransaction.objects.filter(description=t.description, category=t.category)
-			if scdt:
-				next_date=scdt[0].scheduled_date+relativedelta(weeks=+2)
-				scdt[0].scheduled_date=next_date
-				scdt[0].save()
 
 		return super().form_valid(form)
 	
-
-		
+	def get_success_url(self):
+		return reverse('transaction-list')
+	

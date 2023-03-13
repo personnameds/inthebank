@@ -1,0 +1,14 @@
+Transactions
+	Views
+		Transaction Import
+			Hardcoded file reading depending on account
+
+inthebank
+	Views
+		 Function view_title_context_data 
+		 	Do I need to return view_date
+
+See Transactions by Category over Time
+
+
+
