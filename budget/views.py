@@ -30,15 +30,40 @@ def get_month_lastyearbudget():
 def get_budget():
 	pass
 
-def get_scheduledbudget():
-	pass
+def get_scheduledbudget(group,category,view_date):
+	if group:
+		sb = ScheduledBudget.objects.get(categorygroup=group)
+	else:
+		sb = ScheduledBudget.objects.get(category=category)
+	
+	budget = sb.amount
+	if view_date >= sb.last_date:
+		from_date = sb.last_date
+	
+	else:
+		from_date = sb.last_date
+		while from_date > view_date:
+			from_date = from_date + relativedelta(weeks=-2)
+		
+	to_date = view_date.replace(day=monthrange(view_date.year,view_date.month)[1])
+	
+	#2 weeks hardcoded in
+	sched_dates = rrule(freq=WEEKLY, interval=2, dtstart=from_date, until=to_date)
+	sched_dates = [sd for sd in sched_dates if sd.month == view_date.month]
+	
+	budget = len(sched_dates) * budget
+	if sched_dates[0].date() > sb.last_date:
+		sb.last_date = sched_dates[0]
+		sb.save()
+	
+	return budget
 
 def check_specific_budget():
 	pass
 
 def get_budget(group,category,method,view_date):
 	if method == 'N':
-		budget = 0
+		budget = None
 	elif method =='C':
 		if group:
 			budget = ConstantBudget.objects.get(categorygroup=group).amount
@@ -58,32 +83,10 @@ def get_budget(group,category,method,view_date):
 		
 		budget = budget['amount__sum'] or 0
 		budget = budget/3
-	elif method == 'S':
-		if group:
-			sb = ScheduledBudget.objects.get(categorygroup=group)
-		else:
-			sb = ScheduledBudget.objects.get(category=category)
-		
-		budget = sb.amount
-		if view_date >= sb.last_date:
-			from_date = sb.last_date
-		
-		else:
-			from_date = sb.last_date
-			while from_date > view_date:
-				from_date = from_date + relativedelta(weeks=-2)
-			
-		to_date = view_date.replace(day=monthrange(view_date.year,view_date.month)[1])
-		
-		#2 weeks hardcoded in
-		sched_dates = rrule(freq=WEEKLY, interval=2, dtstart=from_date, until=to_date)
-		sched_dates = [sd for sd in sched_dates if sd.month == view_date.month]
-		
-		budget = len(sched_dates) * budget
 
-		if sched_dates[0].date() > sb.last_date:
-			sb.last_date = sched_dates[0]
-			sb.save()
+	elif method == 'S':
+		budget = get_scheduledbudget(group,category,view_date)
+
 	elif method == 'Y':
 		from_date = view_date.replace(day=1)
 		from_date = from_date + relativedelta(years=-1)

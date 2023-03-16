@@ -26,11 +26,6 @@ Budget
 		*Didn't look at Update and Create Views
 
 Envelope
-	Views
-		List
-		List by Month
-		Update
-		Create
 	Models 
 		*Carryover How Do I Use This?
 

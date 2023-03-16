@@ -3,13 +3,26 @@
 {% load crispy_forms_tags %}
 
 {% block main_content %}
-	<h1>Update</h1>
+	{% if category %}
+		<h1>Update Envelope for {{category}}</h1>
+	{% else %}
+		<h1>Update Envelope for {{group}}</h1>
+	{% endif %}
 	
 	<form method="post">{% csrf_token %}
+		{% if category %}
+			<p>
+				Category
+				<input class="form-control" type="text" placeholder="{{category.name}}" readonly>
+			</p>
+		{% else %}
+			<p>
+				Category Group
+				<input class="form-control" type="text" placeholder="{{group.name}}" readonly>
+			</p>
+		{% endif %}
     	{{ form | crispy }}
    	<input type="submit" name='submit' value="Update">
 	<input type="submit" name='submit' value="Delete">
 	</form>
 {% endblock %}
-
-
