@@ -8,10 +8,15 @@ BUDGET_METHOD = [
 	('Y','Based on Last Year'),
 	]
 	
+def get_uncategorized_group():
+	#Default Category Group is Uncategorized
+	#Creates if it doesn't exist.
+	group, created = CategoryGroup.objects.get_or_create(name='Uncategorized')
+	return group.id
+
 class CategoryGroup(models.Model):
 	name = models.CharField(max_length=50)
 	budget_method = models.CharField(max_length=1, choices=BUDGET_METHOD, default='N')
-	remainder = models.BooleanField(default=True, help_text='Check if pot of money.')
 
 	def __str__(self):
 		return '%s' %self.name
@@ -19,12 +24,10 @@ class CategoryGroup(models.Model):
 	class Meta:
 		verbose_name='Category Group'
 	
-
 class Category(models.Model):
 	name = models.CharField(max_length=50)
-	group = models.ForeignKey(CategoryGroup, on_delete=models.PROTECT)
+	group = models.ForeignKey(CategoryGroup, on_delete=models.SET_DEFAULT, default=get_uncategorized_group)
 	budget_method = models.CharField(max_length=1, choices=BUDGET_METHOD, default='N')
-	remainder = models.BooleanField(default=True, help_text='Check if pot of money.')
 
 	def __str__(self):
 		return '%s' %self.name

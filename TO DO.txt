@@ -5,10 +5,41 @@ Transactions
 
 inthebank
 	Views
-		 Function view_title_context_data 
-		 	Do I need to return view_date
+		 Function view_title_context_data
+		 	Works - relook to clean up
 
-See Transactions by Category over Time
+Category
+	Views
+		*Several views include Scheduled Budget and Constant Budget
+		*Update Views return to Category List, should return to last location
+		*Group Must Have Categories (So needs be inline)
+			Create Views Fail, somewhere program must have amount??
+			Category Group Create
+
+Budget
+	models
+		Scheduled Budget - Hardcoded Bi-weekly
+		Specific Budget
+			Do I need this?
+	Views
+		*Update BudgetsViews return to Category List, should return to last location
+		*Didn't look at Update and Create Views
+
+Envelope
+	Views
+		List
+		List by Month
+		Update
+		Create
+	Models 
+		*Carryover How Do I Use This?
+
+Not Started:
+
+Forecast
+Account - Home
+Templates
+Admin
 
 
 

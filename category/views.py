@@ -1,11 +1,10 @@
 from django.views.generic import ListView
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import UpdateView, FormView, DeleteView
+from django.views.generic.edit import UpdateView, FormView, DeleteView, CreateView
 from .forms import FilterForm
 from .models import Category, CategoryGroup
 from budget.models import ConstantBudget, ScheduledBudget
 from transaction.models import Transaction
-from decimal import Decimal
 from django.db.models import Sum
 from inthebank.views import view_title_context_data
 from django.urls import reverse
@@ -18,10 +17,11 @@ class CategoryListView(ListView):
 	context_object_name = 'category_group_list'
 	template_name = 'category_list.html'
 
-class CategoryGroupUpdateView(UpdateView):
+#Fails looking for Amount in Relation to Category
+class CategoryGroupCreateView(CreateView):
 	model  = CategoryGroup
-	template_name = 'category_form.html'
-	fields=['name', 'budget_method', 'remainder']
+	template_name = 'generic_create_form.html'
+	fields=['name', 'budget_method',]
 
 	def get_success_url(self, **kwargs):
 		if self.object.budget_method == 'C':
@@ -36,12 +36,59 @@ class CategoryGroupUpdateView(UpdateView):
 				return reverse('scheduledbudget-update', kwargs={'pk':sb[0].pk})
 			else:
 				return reverse('scheduedbudget-create', kwargs={'group_pk':self.object.pk, 'cat_pk':None})
-		return reverse('budget-list')
+		return reverse('category-list')
+
+#Fails looking for Amount in Relation to Category
+class CategoryCreateView(CreateView):
+	model = Category
+	template_name = 'generic_create_form.html'
+	fields=['name', 'group', 'budget_method',]
+
+	def get_initial(self):
+		initial = super().get_initial()
+		group=CategoryGroup.objects.get(pk=self.kwargs['group_pk'])
+		initial['group'] = group
+		return initial
+
+	def get_success_url(self, **kwargs):
+		if self.object.budget_method == 'C':
+			cb = ConstantBudget.objects.filter(category=self.object)
+			if cb:
+				return reverse('constantbudget-update', kwargs={'pk':cb[0].pk})
+			else:
+				return reverse('constantbudget-create', kwargs={'group_pk':self.object.pk, 'cat_pk':None})
+		elif self.object.budget_method=='S':
+			sb = ScheduledBudget.objects.filter(category=self.object)
+			if sb:
+				return reverse('scheduledbudget-update', kwargs={'pk':sb[0].pk})
+			else:
+				return reverse('scheduedbudget-create', kwargs={'group_pk':self.object.pk, 'cat_pk':None})
+		return reverse('category-list')
+
+class CategoryGroupUpdateView(UpdateView):
+	model  = CategoryGroup
+	template_name = 'category_form.html'
+	fields=['name', 'budget_method',]
+
+	def get_success_url(self, **kwargs):
+		if self.object.budget_method == 'C':
+			cb = ConstantBudget.objects.filter(categorygroup=self.object)
+			if cb:
+				return reverse('constantbudget-update', kwargs={'pk':cb[0].pk})
+			else:
+				return reverse('constantbudget-create', kwargs={'group_pk':self.object.pk, 'cat_pk':None})
+		elif self.object.budget_method=='S':
+			sb = ScheduledBudget.objects.filter(categorygroup=self.object)
+			if sb:
+				return reverse('scheduledbudget-update', kwargs={'pk':sb[0].pk})
+			else:
+				return reverse('scheduedbudget-create', kwargs={'group_pk':self.object.pk, 'cat_pk':None})
+		return reverse('category-list')
 
 class CategoryUpdateView(UpdateView):
 	model  = Category
 	template_name = 'category_form.html'
-	fields=['name', 'budget_method', 'remainder']
+	fields=['name', 'budget_method',]
 
 	def get_success_url(self, **kwargs):
 		if self.object.budget_method == 'C':
@@ -56,7 +103,14 @@ class CategoryUpdateView(UpdateView):
 				return reverse('scheduledbudget-update', kwargs={'pk':sb[0].pk})
 			else:
 				return reverse('scheduledbudget-create', kwargs={'group_pk':None, 'cat_pk':self.object.pk})
-		return reverse('budget-list')
+		return reverse('category-list')
+
+class CategoryGroupDeleteView(DeleteView):
+	model = CategoryGroup
+	template_name = 'category_confirm_delete.html'
+	
+	def get_success_url(self):
+		return reverse('category-list')
 
 class CategoryDeleteView(DeleteView):
 	model = Category
@@ -64,7 +118,6 @@ class CategoryDeleteView(DeleteView):
 	
 	def get_success_url(self):
 		return reverse('category-list')
-
 
 class SpendingView(TemplateView):
 	template_name='spending_list.html'
@@ -76,8 +129,7 @@ class SpendingView(TemplateView):
 		
 		context, view_date=view_title_context_data(self, context, view_url, view_title)
 
-
-		##Group Category, Amount (sum of transactions), Budget
+		##Group Category, Amount (sum of transactions)
 		##Table: Date, Description, Amount
 		spending_list=[]
 	

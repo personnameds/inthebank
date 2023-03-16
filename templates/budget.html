@@ -1,65 +1,80 @@
 {% extends "base.html" %}
 
 {% block main_content %}
-	<h1>{{title}}</h1>	
+	<h1>
+	{{title}}	
+	{% if view_date %}
+		<a href="{% url view_url prev.year prev.month %}"><svg width="1em" height="1em" viewBox="0 1 16 16" class="bi bi-caret-left-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M3.86 8.753l5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/></svg></a>
+		{{view_date|date:"F"}}
+		{% if next %}
+			<a href="{% url view_url next.year next.month %}"><svg width="1em" height="1em" viewBox="0 1 16 16" class="bi bi-caret-right-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12.14 8.753l-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/></svg></a>	
+		{% endif %}
+	{% endif %}
+	</h1>
 	
 	<table class="table table-sm">
 		<thead>
 		<tr class="table-primary">
 			<th scope="col">Group</th>
 			<th scope="col">Category</th>
-			<th scope="col">Spent</th>
-			{% for m in month_list %}
-				<th scope="col">{{m|date:"M"}}</th>
-			{% endfor %}
+			<th colspan="3" class="text-center">Spent</th>
+			<th scope="col">Budget</th>
+			<th scope="col">Budget</th>
 		</tr>
 		</thead>	
 		<tbody>
-
-		{% for group in budget_list %}
-			<tr class="table-secondary">
-				<td colspan='2'>
-					<a class="nav-link" href="{% url 'category-group-update' group.0.0.pk %}">
-					{{group.0.0.name}}</a>
-				</td>
-				<td>{{group.0.1|floatformat:"2"}}</td><!-- Spent -->
-				<td><a class="nav-link" href="{% url 'specificbudget-form' group.0.0.pk None month_list.0.month month_list.0.year %}">
-					{{group.0.2|floatformat:"2"}}<!-- Left in Month -->
-				</a></td>
-				{% if group.0.3 %} <!-- Budget for rest of Months -->
-					{% for b in group.0.3 %}
-					<td>
-						<a class="nav-link" href="{% url 'specificbudget-form' group.0.0.pk None b.0.month b.0.year %}">
-						{{b.1|floatformat:"2"}}{{b.2}}</a>
-					</td>
-					{% endfor %}
-				{% else %}
-					<td colspan='11'></td>
-				{% endif %}
-			<tr>
-			{% for cat in group.1 %}
-			<tr>
-				<td></td>
-				<td>
-					<a class="nav-link" href="{% url 'category-update' cat.0.pk %}">
-					{{cat.0.name}}</a>
-				</td>
-				<td>{{cat.1|floatformat:"2"}}</td><!-- Spent -->
-				<td><a class="nav-link" href="{% url 'specificbudget-form' None cat.0.pk month_list.0.month month_list.0.year %}">
-					{{cat.2|floatformat:"2"}}<!-- Left in Month -->
-				</a></td>
-				{% if cat.3 %} <!-- Budget for rest of Months -->
-					{% for b in cat.3 %}
-					<td>
-						<a class="nav-link" href="{% url 'specificbudget-form' None cat.0.pk b.0.month b.0.year %}">
-						{{b.1|floatformat:"2"}}{{b.2}}</a>
-					</td>
-					{% endfor %}
-				{% endif %}
-			<tr>
-			{% endfor %} <!-- End for Categories -->
+			<tr class="table-primary">
+				<td colspan="2"></td>
+				{% for date in date_list %}
+					<th scope="col">{{date|date:"M"}}</th>
+				{% endfor %}
+				<th>Info</th>
+			</tr>
 			
-		{% endfor %} <!-- End for Group -->
+			{%for group, categories in full_list %}
+				<tr class="table-secondary">
+					<td colspan="2">{{group.0}}</td>
+				
+					{%for spent in group.1 %}
+						<td>{{spent|floatformat:"2"}}</td>
+					{% endfor %}
+				
+					<td>{{group.2|floatformat:"2"}}</td>
+					<td>
+						{{group.3}}
+						<a href="{% url 'category-group-update' group.0.pk %}">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+								<path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+								<path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+							</svg>
+						</a>
+					</td>
+					
+				</tr>
+
+				{%for cat in categories %}
+				<tr>
+					<td></td>
+					<td>{{cat.0}}</td>
+
+					{%for spent in cat.1 %}
+						<td>{{spent|floatformat:"2"}}</td>
+					{% endfor %}
+
+					<td>{{cat.2|floatformat:"2"}}</td>
+					<td>
+						{{cat.3}}
+						<a href="{% url 'category-update' cat.0.pk %}">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+								<path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+								<path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+							</svg>
+						</a>
+					</td>
+					
+				</tr>
+				{% endfor %}	
+			{% endfor %}
 
 		</tbody>
 	</table>

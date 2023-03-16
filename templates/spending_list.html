@@ -14,30 +14,22 @@
 	{% endif %}
 	</h1>
 
-	<a class="nav-link" href="{% url 'spending-filter' %}">Filter Spending</a>
+	<h5>
+		<a class="nav-link" href="{% url 'spending-filter' %}">Filter Spending</a>
+	</h5>
+	
 	<table class="table">
-		<thead>
-		<tr>
-			<th scope="col">Group</th>
-			<th scope="col">Category</th>
-			<th scope="col">Amount</th>
-			<th scope="col">Budget</th>
-		</tr>
-		</thead>
 		<tbody>			
 			{% for group in spending_list %}
 				<tr class="table-primary">
 					<td colspan='2'>{{group.0.name}}</td>
 					<td>{{group.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
-					<td>{{group.0.budget}}</td>
 				</tr>							
 				{% for cat in group.2 %}
 					{% if cat.2 %}
 						<tr class="table-secondary">
-							<td></td>
-							<td>{{cat.0.name}}</td>
+							<td colspan='2'>{{cat.0.name}}</td>
 							<td>{{cat.1.amount__sum|floatformat:"2"|default:"0.00"}}</td>
-							<td>{{cat.0.budget}}</td>
 						</tr>
 						<tr>
 							{% for tran in cat.2 %}
@@ -45,8 +37,6 @@
 								<td>{{tran.date}}</td>
 								<td>{{tran.description}}</td>
 								<td>{{tran.amount}}</td>
-								<td><a class="nav-link" href="{% url 'transaction-update' tran.pk %}?next={{request.path|urlencode}}"">Edit</td></a>
-								<td></td>
 							</tr>
 							{% endfor %}
 						</tr>
