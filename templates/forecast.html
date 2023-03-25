@@ -5,122 +5,91 @@
 {% block main_content %}
 	<h1>Forecast</h1>
 	<table class="table">
-		<!-- Account -->	
-		<thead>
-			<tr class="table-primary">
-				<th scope="col" colspan='2'>Accounts</th>
-				<th scope="col">Current</th>
-				{% for m in month_list %}
-					<th scope="col">{{m|date:"M"}}</th>
-				{% endfor %}
-			</tr>
-		</thead>
-		{% for account in accounts %}
-		<tr>
-			<td></td>
-			<td>{{account.name}}</td>
-			{% if forloop.first %} <!-- Primary account so account[0]-->
-				{% for balance in account_balance_list %} 
-					{% if forloop.first %} <!-- Current Month-->
-						<td colspan='2'>{{balance|floatformat:"2"}}</td>
-					{% else %} <!-- Rest of Months -->
-						<td>{{balance|floatformat:"2"}}</td>
-					{% endif %}
-				{% endfor %}
-			{% else %} <!-- Credit Cards -->
-				<td>{{account.balance}}</td> <!-- Current Month Only-->
-			{% endif %}
-		{% endfor %}
-		</tr>
-		<!-- Income -->
-		<thead>
-			<tr class="table-primary">
-				<th scope="col" colspan='2'>Income</th>
-				<th scope="col">Earned</th>
-				{% for m in month_list %}
-					<th scope="col">{{m|date:"M"}}</th>
-				{% endfor %}
-			</tr>
-		</thead>
-		{% for income_item in income_list %}
-		<tr>
-			<td></td>
-			<td><a class="nav-link" href="{% url 'category-update' income_item.0.pk %}">{{income_item.0}}</a></td>
-			<td>{{income_item.1|floatformat:"2"|default:"0.00"}}</td> <!-- Earned -->
-			<td><a class="nav-link" href="{% url 'specificbudget-form' None income_item.0.pk month_list.0.month month_list.0.year %}">
-				{{income_item.2|floatformat:"2"|default:"0.00"}} <!-- To Earn -->
-			</a></td>
-			{% for income in income_item.3 %}
-				<td><a class="nav-link" href="{% url 'specificbudget-form' None income_item.0.pk income.0.month income.0.year %}">
-					{{income.1|floatformat:"2"|default:"0.00"}}{{income.2}}
-				</a></td>
-			{% endfor %}
-		</tr>
-		{% endfor %}
-		<!-- Income Total -->
-		<tr class="table-secondary">
-			<td colspan='2'>Total Income</td>
-			{% for total in total_income_list %}
-				<td>{{total|floatformat:"2"|default:"0.00"}}</td> 
-			{% endfor %}
-		</tr>
-		<thead>
-			<tr class="table-primary">
-				<th scope="col">Group</th>
-				<th scope="col">Category</th>
-				<th scope="col">Spent</th>
-				{% for m in month_list %}
-					<th scope="col">{{m|date:"M"}}</th>
-				{% endfor %}
-			</tr>
-			</thead>	
-	<tbody>
-		<!-- Debit Items-->
-		{% for group in budget_list %}
-			<tr class="table-secondary">
-				<td colspan='2'>{{group.0.0.name}}</td>
-				<td>{{group.0.1|floatformat:"2"}}</td><!-- Spent -->
-				<td>{{group.0.2|floatformat:"2"}}</td><!-- Budget Left -->
-				{% if group.0.3 %} <!-- Budget for rest of Months -->
-					{% for b in group.0.3 %}
-					<td>{{b.1|floatformat:"2"}}{{b.2}}</td><!-- b.0 is date not used-->
-					{% endfor %}
-				{% else %}
-					<td colspan='11'></td>
-				{% endif %}
-			<tr>
-			{% for cat in group.1 %}
-			<tr>
-				<td colspan='1'></td>
-				<td>{{cat.0.name}}</td>
-				<td>{{cat.1|floatformat:"2"}}</td><!-- Spent -->
-				<td>{{cat.2|floatformat:"2"}}</td><!-- Budget Left -->
-				{% if cat.3 %} <!-- Budget for rest of Months -->
-					{% for b in cat.3 %}
-					<td>{{b.1|floatformat:"2"}}{{b.2}}</td><!-- b.0 is date not used-->
-					{% endfor %}
-				{% endif %}
-			<tr>
-			{% endfor %} <!-- End for Categories -->
-			
-		{% endfor %} <!-- End for Group -->
-		<!-- Budget Total -->
-		<tr class="table-secondary">
-			<td colspan='2'>Total Spent</td>
-			{% for total in total_budget_list %}
-				<td>{{total|floatformat:"2"|default:"0.00"}}</td> 
-			{% endfor %}
-		</tr>
+
+
 		
-		<!-- Net -->
+	<table class="table">
+		<!-- Account -->	
 		<tr class="table-primary">
-			<td colspan='2'>Net</td>
-			{% for net in net_list %}
-				<td>{{net|floatformat:"2"|default:"0.00"}}</td> 
+			<td colspan='2'>Bank Account</td>
+			<td>Balance</td>
+			{% for month in month_list %}
+				<td>{{month|date:"M"}}</td>
 			{% endfor %}
 		</tr>
-	
-	</tbody>
+		<tr>
+			<td colspan="2">{{account.name}}</td>
+			<td>{{account.balance|floatformat:"2"}}</td>
+			{% for b in balance %}
+				<td>{{b|floatformat:"2"}}</td>
+			{% endfor %}	
+		</tr>
+		<!-- End of Account -->	
+		<!-- Income -->	
+		<tr class="table-primary">
+			<td colspan='2'>Income</td>
+			<td>To Earn</td>
+			{% for month in month_list %}
+				<td>{{month|date:"M"}}</td>
+			{% endfor %}
+		</tr>
+		<tr>
+			<td colspan="2">{{income_list.0}}</td>
+			<td>{{income_list.1|floatformat:"2"}}</td>		
+				{% for income in income_list.2 %}
+					<td>{{income|floatformat:"2"}}</td>
+				{% endfor %}		
+		</tr>
+		<!-- End of Income -->
+		<!-- Credit Cards-->	
+		<tr class="table-primary">
+			<td colspan='2'>Credit Cards</td>
+			<td>Balance</td>
+			<td colspan="100"></td>
+		</tr>
+		{% for credit_card in credit_cards %}
+		<tr>
+			<td colspan="2">{{credit_card.name}}</td>
+			<td>{{credit_card.balance|floatformat:"2"}}</td>		
+			<td colspan="100"></td>
+		</tr>
+		{% endfor %}
+
+		<!-- End of Credit Cards -->
+		<!-- Categories -->	
+		<tr class="table-primary">
+			<td scope="col">Group</td>
+			<td scope="col">Category</td>
+			<td scope="col">To Spend</td>
+			{% for month in month_list %}
+				<td scope="col">{{month|date:"M"}}</td>
+			{% endfor %}
+		</tr>
+		{% for group, categories in full_list %}
+		<tr class="table-secondary">
+			<td colspan="2">{{group.0}}</td>
+			<td>{{group.1|floatformat:"2"}}</td>		
+				{% for forecast in group.2 %}
+					<td>{{forecast|floatformat:"2"}}</td>
+				{% endfor %}	
+		</tr>
+			{% for cat in categories %}
+				<tr>
+					<td></td>
+					<td>{{cat.0}}</td>
+					<td>{{cat.1|floatformat:"2"}}</td>		
+						{% for forecast in cat.2 %}
+							<td>{{forecast|floatformat:"2"}}</td>
+						{% endfor %}	
+				</tr>
+			{% endfor %}
+		{% endfor %}	
+		<tr class="table-primary">
+			<td colspan="2">Total</td>		
+			{% for t in total %}
+				<td>{{t|floatformat:"2"}}</td>
+			{% endfor %}	
+		</tr>
 	</table>	
 
 {% endblock %}

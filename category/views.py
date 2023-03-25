@@ -21,7 +21,7 @@ class CategoryListView(ListView):
 class CategoryGroupCreateView(CreateView):
 	model  = CategoryGroup
 	template_name = 'generic_create_form.html'
-	fields=['name', 'budget_method',]
+	fields=['name', 'budget_method','remainder']
 
 	def get_success_url(self, **kwargs):
 		if self.object.budget_method == 'C':
@@ -42,7 +42,7 @@ class CategoryGroupCreateView(CreateView):
 class CategoryCreateView(CreateView):
 	model = Category
 	template_name = 'generic_create_form.html'
-	fields=['name', 'group', 'budget_method',]
+	fields=['name', 'group', 'budget_method','remainder']
 
 	def get_initial(self):
 		initial = super().get_initial()
@@ -68,7 +68,7 @@ class CategoryCreateView(CreateView):
 class CategoryGroupUpdateView(UpdateView):
 	model  = CategoryGroup
 	template_name = 'category_form.html'
-	fields=['name', 'budget_method',]
+	fields=['name', 'budget_method','remainder']
 
 	def get_success_url(self, **kwargs):
 		if self.object.budget_method == 'C':
@@ -88,7 +88,7 @@ class CategoryGroupUpdateView(UpdateView):
 class CategoryUpdateView(UpdateView):
 	model  = Category
 	template_name = 'category_form.html'
-	fields=['name', 'budget_method',]
+	fields=['name', 'budget_method','remainder']
 
 	def get_success_url(self, **kwargs):
 		if self.object.budget_method == 'C':

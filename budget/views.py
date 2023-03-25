@@ -11,25 +11,6 @@ from django.db.models import Sum
 from django.urls import reverse
 from calendar import monthrange
 
-
-def get_spent():
-	pass
-
-def get_month_scheduledbudget():
-	pass
-
-def get_month_avgquarterbudget():
-	pass
-
-def get_month_constantbudget():
-	pass
-
-def get_month_lastyearbudget():
-	pass
-
-def get_budget():
-	pass
-
 def get_scheduledbudget(group,category,view_date):
 	if group:
 		sb = ScheduledBudget.objects.get(categorygroup=group)
@@ -152,9 +133,9 @@ class BudgetView(TemplateView):
 				category_budget = get_budget(None,category,category.budget_method,view_date)
 
 				#Crategory List
-				category_list.append((category,category_spent,category_budget, category.budget_method))
+				category_list.append((category,category_spent,category_budget, category.budget_method, category.remainder))
 	
-			full_list.append(((group,group_spent,group_budget, group.budget_method),category_list))
+			full_list.append(((group,group_spent,group_budget, group.budget_method, group.remainder),category_list))
 
 		context['full_list'] = full_list
 		return context

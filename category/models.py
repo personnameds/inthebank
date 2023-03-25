@@ -17,6 +17,7 @@ def get_uncategorized_group():
 class CategoryGroup(models.Model):
 	name = models.CharField(max_length=50)
 	budget_method = models.CharField(max_length=1, choices=BUDGET_METHOD, default='N')
+	remainder = models.BooleanField(default=False)
 
 	def __str__(self):
 		return '%s' %self.name
@@ -28,6 +29,7 @@ class Category(models.Model):
 	name = models.CharField(max_length=50)
 	group = models.ForeignKey(CategoryGroup, on_delete=models.SET_DEFAULT, default=get_uncategorized_group)
 	budget_method = models.CharField(max_length=1, choices=BUDGET_METHOD, default='N')
+	remainder = models.BooleanField(default=False)
 
 	def __str__(self):
 		return '%s' %self.name
