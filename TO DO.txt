@@ -19,8 +19,7 @@ Category
 Budget
 	models
 		Scheduled Budget - Hardcoded Bi-weekly
-		Specific Budget
-			Do I need this?
+
 	Views
 		*Update BudgetsViews return to Category List, should return to last location
 		*Didn't look at Update and Create Views
@@ -30,7 +29,6 @@ Envelope
 		*Carryover???
 
 Forecast
-	Change Forecast
 
 
 Not Started:

@@ -3,8 +3,8 @@ from category.models import Category, CategoryGroup
 from transaction.models import Transaction
 from envelope.models import Envelope
 from budget.views import get_budget, get_scheduledbudget
-from budget.models import ScheduledBudget
-from datetime import date
+from budget.models import ScheduledBudget, SpecifiedBudget
+from datetime import date, datetime
 from dateutil.rrule import rrule, MONTHLY, WEEKLY
 from dateutil.relativedelta import relativedelta
 from django.db.models import Sum
@@ -68,9 +68,10 @@ class ForecastTemplateView(TemplateView):
 		to_date = from_date + relativedelta(months=11, days=-1)
 		month_list = list(rrule(freq=MONTHLY, dtstart=from_date, until=to_date))
 		context['month_list'] = month_list
-		
+
 		transaction_list = Transaction.objects.filter(date__month=today.month, date__year=today.year)
 		envelope_list = Envelope.objects.filter(date__month=today.month, date__year=today.year)
+		specified_list = SpecifiedBudget.objects.filter(date__gte=from_date, date__lte=to_date)
 
 		total=[]
 
@@ -94,6 +95,7 @@ class ForecastTemplateView(TemplateView):
 		
         #Income to Earn - Budget or Envelope - Current
 		income_envelope = envelope_list.filter(category=income_category)
+		
 		if income_envelope:
 			income_envelope = income_envelope[0].amount
 		else:
@@ -104,11 +106,20 @@ class ForecastTemplateView(TemplateView):
 		total[0] = total[0] + to_earn
 		#Income Forecast
 		income_forecast = get_schedule_forecast(None, income_category, from_date, to_date, month_list)
-	
+
+		#Specified Budgets
+		specified_budgets = specified_list.filter(category=income_category)
+		for sp in specified_budgets:
+			sp_date = datetime(sp.date.year, sp.date.month, 1, 0, 0)
+			index = month_list.index(sp_date)
+			income_forecast[index] = sp.amount
+
 		for income in income_forecast:
 			total.append(income)
+
+		income_forecast = zip(income_forecast, month_list)
 		
-		income_list=(income_category, to_earn,income_forecast)
+		income_list=(income_category, to_earn, income_forecast)
 
 		context['income_list'] = income_list
 ## End of Income
@@ -162,10 +173,17 @@ class ForecastTemplateView(TemplateView):
 				for m in month_list:
 					group_forecast_list.append(amount)
 
+			#Group Specified Budgets
+			specified_budgets = specified_list.filter(categorygroup=group)
+			for sp in specified_budgets:
+				sp_date = datetime(sp.date.year, sp.date.month, 1, 0, 0)
+				index = month_list.index(sp_date)
+				group_forecast_list[index] = sp.amount
+
 			for i in range(1,12):
 				if group_forecast_list[i-1]:
 					total[i] = total[i] + group_forecast_list[i-1]
-			
+
 			#Category Spent - Current
 			for category in categories:
 				category_spent = transaction_list.filter(category=category).aggregate(Sum('amount'))
@@ -206,12 +224,22 @@ class ForecastTemplateView(TemplateView):
 					for m in month_list:
 						category_forecast_list.append(amount)
 
+				#Category Specified Budgets
+				specified_budgets = specified_list.filter(category=category)
+				for sp in specified_budgets:
+					sp_date = datetime(sp.date.year, sp.date.month, 1, 0, 0)
+					index = month_list.index(sp_date)
+					category_forecast_list[index] = sp.amount
+
 				for i in range(1,12):
 					if category_forecast_list[i-1]:
 						total[i] = total[i] + category_forecast_list[i-1]
 
 				#Crategory List
+				category_forecast_list = zip(category_forecast_list, month_list)
 				category_list.append((category,category_to_spend,category_forecast_list))
+	
+			group_forecast_list = zip(group_forecast_list, month_list)
 
 			full_list.append(((group,group_to_spend,group_forecast_list),category_list))
 		

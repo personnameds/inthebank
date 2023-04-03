@@ -1,9 +1,9 @@
 from category.models import Category, CategoryGroup
-from .models import ConstantBudget, ScheduledBudget
+from .models import ConstantBudget, ScheduledBudget, SpecifiedBudget
 from transaction.models import Transaction
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import UpdateView, CreateView
-from datetime import timedelta
+from datetime import timedelta, datetime
 from dateutil.rrule import rrule, MONTHLY, WEEKLY
 from dateutil.relativedelta import relativedelta
 from inthebank.views import view_title_context_data
@@ -187,6 +187,50 @@ class ScheduledBudgetCreateView(CreateView):
 			cat = Category.objects.get(pk=self.kwargs['cat_pk'])
 			form.instance.category = cat
 			
+		return super().form_valid(form)
+
+	def get_success_url(self):
+		return reverse('budget-list')
+
+class SpecifiedBudgetCreateView(CreateView):
+	model  = SpecifiedBudget
+	template_name = 'specified_budget_form.html'
+	fields=['amount',]
+
+	def get_context_data(self, **kwargs):
+		context = super().get_context_data(**kwargs)
+		if self.kwargs['group_pk'] != 'None':
+			group = CategoryGroup.objects.get(pk=self.kwargs['group_pk'])
+		else:
+			category = Category.objects.get(pk=self.kwargs['cat_pk'])
+			group = category.group
+			context['category'] = category
+        
+		month = self.kwargs['month']
+		year = self.kwargs['year']
+		date = datetime(year, month,1)
+		context['date'] = date
+		context['group'] = group
+		return context
+
+	def form_valid(self, form):
+		month = self.kwargs['month']
+		year = self.kwargs['year']
+		date = datetime(year, month,1)
+		form.instance.date = date
+
+		if self.kwargs['group_pk'] != 'None':
+			group = CategoryGroup.objects.get(pk=self.kwargs['group_pk'])
+			form.instance.categorygroup = group
+
+			if SpecifiedBudget.objects.filter(categorygroup=group,date=date):
+				SpecifiedBudget.objects.get(category=cat,date=date).delete()
+		else:
+			cat = Category.objects.get(pk=self.kwargs['cat_pk'])
+			form.instance.category = cat
+			if SpecifiedBudget.objects.filter(category=cat,date=date):
+				SpecifiedBudget.objects.get(category=cat,date=date).delete()
+
 		return super().form_valid(form)
 
 	def get_success_url(self):

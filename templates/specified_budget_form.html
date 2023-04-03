@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block main_content %}
+	<h1>Update Budget for {{category}} in {{group}}</h1>
+	<h1>{{date|date:"M Y"}}</h1>
+	<form method="post">{% csrf_token %}
+    	{{ form | crispy }}
+   	 <input type="submit" value="Update">
+	</form>
+{% endblock %}
+
+

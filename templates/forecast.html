@@ -36,8 +36,12 @@
 		<tr>
 			<td colspan="2">{{income_list.0}}</td>
 			<td>{{income_list.1|floatformat:"2"}}</td>		
-				{% for income in income_list.2 %}
-					<td>{{income|floatformat:"2"}}</td>
+				{% for income, month in income_list.2 %}
+					<td>
+						<a href="{% url 'specifiedbudget-create' None income_list.0.pk month.year month.month  %}">
+							{{income|floatformat:"2"}}
+						</a>
+					</td>
 				{% endfor %}		
 		</tr>
 		<!-- End of Income -->
@@ -69,17 +73,25 @@
 		<tr class="table-secondary">
 			<td colspan="2">{{group.0}}</td>
 			<td>{{group.1|floatformat:"2"}}</td>		
-				{% for forecast in group.2 %}
-					<td>{{forecast|floatformat:"2"}}</td>
+				{% for forecast, month in group.2 %}
+					<td>
+						<a href="{% url 'specifiedbudget-create' group.0.pk None month.year month.month  %}">
+							{{forecast|floatformat:"2"}}
+						</a>
+					</td>
 				{% endfor %}	
 		</tr>
 			{% for cat in categories %}
 				<tr>
 					<td></td>
 					<td>{{cat.0}}</td>
-					<td>{{cat.1|floatformat:"2"}}</td>		
-						{% for forecast in cat.2 %}
-							<td>{{forecast|floatformat:"2"}}</td>
+					<td>{{cat.1|floatformat:"2"}}</td>
+						{% for forecast, month in cat.2 %}
+							<td>
+								<a href="{% url 'specifiedbudget-create' None cat.0.pk month.year month.month  %}">
+									{{forecast|floatformat:"2"}}
+								</a>
+							</td>
 						{% endfor %}	
 				</tr>
 			{% endfor %}
